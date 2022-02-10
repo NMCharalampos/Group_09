@@ -11,7 +11,7 @@ DIRECTORY = os.path.join('downloads', 'Consumption.csv')
 
 class DataHandler:
 
-    data = null
+    data = pd.DataFrame
 
     def __init__(self):
         pass
@@ -29,11 +29,17 @@ class DataHandler:
             self.download(DATA_URL)
         
         print("read data ... ")     #TODO
-        data = pd.read_csv(DIRECTORY)
+        self.data = pd.read_csv(DIRECTORY)
 
         #filter accoringly to task 
-        data = data.loc[data['year'] >= 1970].set_index('year')
+        self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
+
+    def list_countries(self):
+        return [country for country in self.data.country.unique()]
 
 
-dataHandler = DataHandler().load_data()
+dataHandler = DataHandler()
+dataHandler.load_data()
+
+print(dataHandler.list_countries())
 
