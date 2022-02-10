@@ -1,7 +1,9 @@
 
+from matplotlib.pyplot import axes, axis
 import requests
 import pandas as pd
 import os
+import matplotlib.ticker as mtick 
 
 from sqlalchemy import null
 
@@ -37,9 +39,20 @@ class DataHandler:
     def list_countries(self):
         return [country for country in self.data.country.unique()]
 
+    def plot_consumption(self, country, normalize=False):
+        plot_data = self.data[self.data.country == country].filter(regex="consumption")
+
+        if normalize: 
+            plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
+        
+        ax = plot_data.plot.area()
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+        ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+        return ax
+
 
 dataHandler = DataHandler()
 dataHandler.load_data()
 
-print(dataHandler.list_countries())
+dataHandler.plot_consumption('Kosovo')
 
