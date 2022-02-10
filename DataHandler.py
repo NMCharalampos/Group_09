@@ -40,8 +40,10 @@ class DataHandler:
         return [country for country in self.data.country.unique()]
 
     def plot_consumption(self, country, normalize=False):
-        plot_data = self.data[self.data.country == country].filter(regex="consumption")
+        if not self.isCountry(country): 
+            return ValueError("This country does not exist.")
 
+        plot_data = self.data[self.data.country == country].filter(regex="consumption")
         if normalize: 
             plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
         
@@ -49,10 +51,13 @@ class DataHandler:
         ax.yaxis.set_major_formatter(mtick.PercentFormatter())
         ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
         return ax
+    
+    def isCountry(self, country):
+        return country in self.list_countries()
 
 
 dataHandler = DataHandler()
 dataHandler.load_data()
 
-dataHandler.plot_consumption('Kosovo')
+dataHandler.plot_consumption('Kosovos')
 
