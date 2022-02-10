@@ -2,6 +2,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode
 
+
+### Downloads ###
+#We do not want to transfer csv files
+downloads/
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
