@@ -53,3 +53,6 @@ dataHandler = DataHandler()
 dataHandler.load_data()
 
 dataHandler.plot_consumption('Kosovos')
+
+print("Hello World")
+
