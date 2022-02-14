@@ -48,6 +48,7 @@ class DataHandler:
     def is_country(self, country):
         return country in self.list_countries()
 
+# hallo Test
 
 dataHandler = DataHandler()
 dataHandler.load_data()
