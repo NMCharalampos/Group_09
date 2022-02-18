@@ -2,6 +2,11 @@ import os
 import requests
 import pandas as pd
 import matplotlib.ticker as mtick
+pd.plotting.register_matplotlib_converters()
+import matplotlib.pyplot as plt
+%matplotlib inline
+import seaborn as sns
+import numpy as np
 
 DATA_URL = "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv"
 DIRECTORY = os.path.join('downloads', 'Consumption.csv')
@@ -49,10 +54,50 @@ class DataHandler:
         return country in self.list_countries()
 
 
+    def gap_minder(self, year):
+            """
+            Plots information about the relation of gdp, total energy consumption, and population
+            
+            Parameters
+            --------------
+            self: class
+                The DataHandler Class itself
+            year: integer
+                The desired year for the the plot
+            
+            Returns:
+            --------------
+            Nothing. Plots the output to the screen
+            """
+            if type(year) not in [int]:
+                raise TypeError("Variable year is not an integer.")
+            
+            plot_data_6 = self.data[self.data.index == year].copy()
+            plot_data_6 = plot_data_6.fillna(0)
+            plot_data_6["total_energy_consumption"] = plot_data_6["biofuel_consumption"] + plot_data_6["coal_consumption"] + plot_data_6["fossil_fuel_consumption"] + plot_data_6["gas_consumption"] + plot_data_6["hydro_consumption"] + plot_data_6["low_carbon_consumption"] + plot_data_6["nuclear_consumption"] + plot_data_6["oil_consumption"] +  plot_data_6["other_renewable_consumption"] + plot_data_6["primary_energy_consumption"] + plot_data_6["renewables_consumption"] + plot_data_6["solar_consumption"] + plot_data_6["wind_consumption"]
+            
+            plt.figure(dpi=120)
+            np_pop = np.array(plot_data_6.population)
+            np_pop2 = np_pop*2
+            
+            sns.scatterplot(plot_data_6.gdp, plot_data_6.total_energy_consumption, hue = plot_data_6.country, size = np_pop2, sizes=(20,900), legend=False )
+            
+            plt.grid(True)
+            plt.xscale('log')
+            plt.xlabel('GDP')
+            plt.ylabel('Total energy consumption')
+            plt.xticks([100000000, 1000000000,10000000000, 100000000000, 1000000000000,10000000000000,100000000000000,1000000000000000])
+            plt.yticks([50000,10000, 100000,200000, 300000, 400000])
+            plt.show()
+        
+
+
+
 dataHandler = DataHandler()
 dataHandler.load_data()
 
 dataHandler.plot_consumption('Kosovos')
 
-print("Hello World")
+dataHandler.gap_minder(2003)
+
 
