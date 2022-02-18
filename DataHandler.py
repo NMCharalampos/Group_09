@@ -33,7 +33,7 @@ class DataHandler:
     def list_countries(self):
         return [country for country in self.data.country.unique()]
 
-    def plot_consumption(self, country, normalize=False):
+    def plot_consumption1(self, country, normalize=False):
         if not self.is_country(country):
             return ValueError("This country does not exist.")
 
@@ -47,6 +47,19 @@ class DataHandler:
 
     def is_country(self, country):
         return country in self.list_countries()
+
+    def plot_consumption2(df,*arg): # To-Do: Name of "dfNew" (Nico's df2017)
+        consumption = pd.DataFrame()
+        countries_list = []
+        for x in arg:
+            countries_list.append(x)
+            dfc = df.loc[df["country"] == x].filter(regex='consumption').sum()
+            consumption = consumption.append(dfc, ignore_index = True)
+            consumption.index = countries_list
+        ax2 = consumption.plot.bar(rot=0)
+        #ax2.yaxis.set_major_formatter(mtick.PercentFormatter()) --> why %?
+        ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+        #print(consumption)
 
 # hallo Test
 
