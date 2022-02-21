@@ -19,8 +19,8 @@ class DataHandler:
         countries selected in '*args' as a bar chart.
 
     gdp()
-        Plots the GDP column of dataframe 'df' over the years for
-        countries selected in '*args' as a line chart.
+        Plots the GDP column over the years for
+        countries selected in '*countries' as a line chart.
 
     """
 
@@ -64,7 +64,7 @@ class DataHandler:
     def is_country(self, country):
         return country in self.list_countries()
 
-    def plot_consumption2(df,*arg): # To-Do: Name of "dfNew" (Nico's df2017)
+    def compare_consumption(self,*countries:str): # To-Do: Name of "dfNew" (Nico's df2017)
         """
 
         Plots the total sum of each energy consumption column in dataframe 'df' for
@@ -84,27 +84,25 @@ class DataHandler:
         """
         consumption = pd.DataFrame()
         countries_list = []
-        for x in arg:
-            countries_list.append(x)
-            dfc = df.loc[df["country"] == x].filter(regex='consumption').sum()
+        for country in countries:
+            if not self.is_country(country):
+                return ValueError("Country " + country + " does not exist.")
+            countries_list.append(country)
+            dfc = self.data.loc[self.data["country"] == country].filter(regex='consumption').sum()
             consumption = consumption.append(dfc, ignore_index = True)
             consumption.index = countries_list
         ax2 = consumption.plot.bar(rot=0)
-        #ax2.yaxis.set_major_formatter(mtick.PercentFormatter()) --> why %?
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-        #print(consumption)
 
-    def gdp(df, *arg):
+    def gdp(self, *countries:str):
         """
 
-        Plots the GDP column of dataframe 'df' over the years for
-        countries selected in '*args' as a line chart.
+        Plots the GDP column over the years for
+        countries selected in '*countries' as a line chart.
 
         Parameters
         ---------------
-        df: pd.DataFrame()
-            The dataframe containing the GDP per country over the years
-        *arg: string
+        *countries: string
             Countries that shall be plotted
 
         Returns
@@ -112,10 +110,12 @@ class DataHandler:
         Nothing. Plots GDP over the years per country in a line chart.
 
         """
-        df['year'] = df.index
-        for x in arg:
-            df_gdp = df.loc[df["country"] == x][['country','gdp','year']]
-            plt.plot(df_gdp['year'],df_gdp['gdp'], label = x)
+        self.data = self.data.reset_index()
+        for country in countries:
+            if not self.is_country(country):
+                return ValueError("Country " + country + " does not exist.")
+            df_gdp = self.data.loc[self.data["country"] == country][['country','gdp','year']]
+            plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
         plt.title('GDP Development')
         plt.xlabel('Year')
         plt.ylabel('GDP (in billion USD)')
@@ -125,4 +125,4 @@ class DataHandler:
 dataHandler = DataHandler()
 dataHandler.load_data()
 
-dataHandler.plot_consumption1('Kosovos')
+dataHandler.compare_consumption('Germany1')
