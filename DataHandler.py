@@ -14,9 +14,9 @@ class DataHandler:
     
     Methods
     --------
-    plot_consumption2()
-        Plots the total sum of each energy consumption column in dataframe 'df' for
-        countries selected in '*args' as a bar chart.
+    compare_consumption()
+        Plots the total sum of each energy consumption column 
+        for countries selected in '*countries' as a bar chart.
 
     gdp()
         Plots the GDP column over the years for
