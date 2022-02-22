@@ -72,15 +72,15 @@ class DataHandler:
             if type(year) not in [int]:
                 raise TypeError("Variable year is not an integer.")
             
-            plot_data_6 = self.data[self.data.index == year].copy()
-            plot_data_6 = plot_data_6.fillna(0)
-            plot_data_6["total_energy_consumption"] = plot_data_6["biofuel_consumption"] + plot_data_6["coal_consumption"] + plot_data_6["fossil_fuel_consumption"] + plot_data_6["gas_consumption"] + plot_data_6["hydro_consumption"] + plot_data_6["low_carbon_consumption"] + plot_data_6["nuclear_consumption"] + plot_data_6["oil_consumption"] +  plot_data_6["other_renewable_consumption"] + plot_data_6["primary_energy_consumption"] + plot_data_6["renewables_consumption"] + plot_data_6["solar_consumption"] + plot_data_6["wind_consumption"]
+            plot_data = self.data[self.data.index == year].copy()
+            plot_data = plot_data.fillna(0)
+            plot_data["total_energy_consumption"] = plot_data.loc[:,plot_data.columns.str.contains('consumption')].sum(axis=1)
             
             plt.figure(dpi=120)
-            np_pop = np.array(plot_data_6.population)
-            np_pop2 = np_pop*2
+            np_pop = np.array(plot_data.population)
             
-            sns.scatterplot(plot_data_6.gdp, plot_data_6.total_energy_consumption, hue = plot_data_6.country, size = np_pop2, sizes=(20,900), legend=False )
+            
+            sns.scatterplot(plot_data.gdp, plot_data.total_energy_consumption, hue = plot_data.country, size = np_pop, sizes=(20,900), legend=False )
             
             plt.grid(True)
             plt.xscale('log')
