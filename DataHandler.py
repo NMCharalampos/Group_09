@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.ticker as mtick
 pd.plotting.register_matplotlib_converters()
 import matplotlib.pyplot as plt
-%matplotlib inline
+#%matplotlib inline
 import seaborn as sns
 import numpy as np
 
@@ -32,7 +32,7 @@ class DataHandler:
         print("read data ... ")     #TODO
         self.data = pd.read_csv(DIRECTORY)
 
-        #filter accoringly to task
+        #filter accordingly to task 
         self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
 
     def list_countries(self):
@@ -89,15 +89,10 @@ class DataHandler:
             plt.xticks([100000000, 1000000000,10000000000, 100000000000, 1000000000000,10000000000000,100000000000000,1000000000000000])
             plt.yticks([50000,10000, 100000,200000, 300000, 400000])
             plt.show()
-        
-
-
 
 dataHandler = DataHandler()
 dataHandler.load_data()
-
 dataHandler.plot_consumption('Kosovos')
-
 dataHandler.gap_minder(2003)
 
 
