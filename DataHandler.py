@@ -54,7 +54,7 @@ class DataHandler:
         return country in self.list_countries()
 
 
-    def gap_minder(self, year):
+    def gap_minder(self, year:int):
             """
             Plots information about the relation of gdp, total energy consumption, and population
             
@@ -86,7 +86,12 @@ class DataHandler:
             plt.xscale('log')
             plt.xlabel('GDP')
             plt.ylabel('Total energy consumption')
-            plt.xticks([100000000, 1000000000,10000000000, 100000000000, 1000000000000,10000000000000,100000000000000,1000000000000000])
+            x_ticks = []
+            x=100_000_000
+            for i in range(8):
+                x_ticks.append(x)
+                x = x* 10
+            plt.xticks(x_ticks)
             plt.yticks([50000,10000, 100000,200000, 300000, 400000])
             plt.show()
 
