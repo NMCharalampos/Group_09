@@ -91,14 +91,12 @@ class DataHandler:
     def compare_consumption(self,*countries:str):
         """
 
-        Plots the total sum of each energy consumption column in dataframe 'df' for
-        countries selected in '*args' as a bar chart.
+        Plots the total sum of each energy consumption column 
+        for countries selected in '*countries' as a bar chart.
 
         Parameters
         ---------------
-        df: pd.DataFrame()
-            The dataframe containing the energy consumption columns per country
-        *arg: string
+        *countries: string
             Countries that shall be plotted
 
         Returns
