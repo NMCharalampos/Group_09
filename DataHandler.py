@@ -1,6 +1,7 @@
 import os
 from typing import List
 import matplotlib
+from matplotlib import pyplot as plt
 import matplotlib.ticker as mtick
 import requests
 import pandas as pd
@@ -9,6 +10,21 @@ DATA_URL = "https://raw.githubusercontent.com/owid/energy-data/master/owid-energ
 DIRECTORY = os.path.join('downloads', 'Consumption.csv')
 
 class DataHandler:
+
+    """
+    ...TBD...
+    
+    Methods
+    --------
+    compare_consumption()
+        Plots the total sum of each energy consumption column 
+        for countries selected in '*countries' as a bar chart.
+
+    gdp()
+        Plots the GDP column over the years for
+        countries selected in '*countries' as a line chart.
+
+    """
 
     data = pd.DataFrame
 
@@ -99,3 +115,31 @@ class DataHandler:
             consumption.index = countries_list
         ax2 = consumption.plot.bar(rot=0)
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+
+def gdp(self, *countries:str):
+        """
+
+        Plots the GDP column over the years for
+        countries selected in '*countries' as a line chart.
+
+        Parameters
+        ---------------
+        *countries: string
+            Countries that shall be plotted
+
+        Returns
+        ---------------
+        Nothing. Plots GDP over the years per country in a line chart.
+
+        """
+        self.data = self.data.reset_index()
+        for country in countries:
+            if not self.is_country(country):
+                return ValueError("Country " + country + " does not exist.")
+            df_gdp = self.data.loc[self.data["country"] == country][['country','gdp','year']]
+            plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
+        plt.title('GDP Development')
+        plt.xlabel('Year')
+        plt.ylabel('GDP (in billion USD)')
+        plt.legend()
+        plt.show()
