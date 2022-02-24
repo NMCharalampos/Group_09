@@ -15,11 +15,10 @@ class DataHandler:
 
     """
     ...TBD...
-    
     Methods
     --------
     compare_consumption()
-        Plots the total sum of each energy consumption column 
+        Plots the total sum of each energy consumption column
         for countries selected in '*countries' as a bar chart.
 
     gdp()
@@ -94,7 +93,7 @@ class DataHandler:
     def compare_consumption(self,*countries:str):
         """
 
-        Plots the total sum of each energy consumption column 
+        Plots the total sum of each energy consumption column
         for countries selected in '*countries' as a bar chart.
 
         Parameters
@@ -119,7 +118,7 @@ class DataHandler:
         ax2 = consumption.plot.bar(rot=0)
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
-def gdp(self, *countries:str):
+    def gdp(self, *countries:str):
         """
 
         Plots the GDP column over the years for
@@ -146,7 +145,7 @@ def gdp(self, *countries:str):
         plt.ylabel('GDP (in billion USD)')
         plt.legend()
         plt.show()
-    
+
     def gap_minder(self, year:int) -> None:
         """
         Plots information about the relation of gdp, total energy consumption, and population
@@ -164,14 +163,19 @@ def gdp(self, *countries:str):
             raise TypeError("Variable year is not an integer.")
         plot_data = self.data[self.data.index == year].copy()
         plot_data = plot_data.fillna(0)
-        plot_data["total_energy_consumption"] = plot_data.loc[:,plot_data.columns.str.contains('consumption')].sum(axis=1)
-        
+        plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum()
+
         plt.figure(dpi=120)
         np_pop = np.array(plot_data.population)
-        
-        
-        sns.scatterplot(x=plot_data.gdp, y=plot_data.total_energy_consumption, hue = plot_data.country, size = np_pop, sizes=(20,900), legend=False)
-        
+
+        sns.scatterplot(
+            x=plot_data.gdp,
+            y=plot_data.total_energy_consumption,
+            hue = plot_data.country,
+            size = np_pop,
+            sizes=(20,900),
+            legend=False)
+
         plt.grid(True)
         plt.xscale('log')
         plt.xlabel('GDP')
@@ -181,8 +185,7 @@ def gdp(self, *countries:str):
         for _ in range(8):
             x_ticks.append(x_tick_1)
             x_tick_1 = x_tick_1* 10
-            
-        
+
         plt.xticks(x_ticks)
         plt.yticks([50000,10000, 100000,200000, 300000, 400000])
         plt.show()
