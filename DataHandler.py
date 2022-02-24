@@ -67,10 +67,35 @@ class DataHandler:
     def is_country(self, country: str) -> bool:
         """checks wether a country is contained in the data set
 
-        Args:
-            country (str): the country to check
-
         Returns:
             bool: True if country is in the data set
         """
         return country in self.list_countries()
+
+    def compare_consumption(self,*countries:str):
+        """
+
+        Plots the total sum of each energy consumption column 
+        for countries selected in '*countries' as a bar chart.
+
+        Parameters
+        ---------------
+        *countries: string
+            Countries that shall be plotted
+
+        Returns
+        ---------------
+        Nothing. Plots sum of different energy consumption per country in a bar chart.
+
+        """
+        consumption = pd.DataFrame()
+        countries_list = []
+        for country in countries:
+            if not self.is_country(country):
+                return ValueError("Country " + country + " does not exist.")
+            countries_list.append(country)
+            dfc = self.data.loc[self.data["country"] == country].filter(regex='consumption').sum()
+            consumption = consumption.append(dfc, ignore_index = True)
+            consumption.index = countries_list
+        ax2 = consumption.plot.bar(rot=0)
+        ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
