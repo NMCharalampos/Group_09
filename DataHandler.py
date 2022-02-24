@@ -55,45 +55,44 @@ class DataHandler:
 
 
     def gap_minder(self, year:int):
-            """
-            Plots information about the relation of gdp, total energy consumption, and population
+        """
+        Plots information about the relation of gdp, total energy consumption, and population
+        Parameters
+        --------------
+        self: class
+            The DataHandler Class itself
+        year: integer
+            The desired year for the the plot
+        Returns:
+        --------------
+        Nothing. Plots the output to the screen
+        """
+        if type(year) not in [int]:
+            raise TypeError("Variable year is not an integer.")
+        plot_data = self.data[self.data.index == year].copy()
+        plot_data = plot_data.fillna(0)
+        plot_data["total_energy_consumption"] = plot_data.loc[:,plot_data.columns.str.contains('consumption')].sum(axis=1)
+        
+        plt.figure(dpi=120)
+        np_pop = np.array(plot_data.population)
+        
+        
+        sns.scatterplot(x=plot_data.gdp, y=plot_data.total_energy_consumption, hue = plot_data.country, size = np_pop, sizes=(20,900), legend=False)
+        
+        plt.grid(True)
+        plt.xscale('log')
+        plt.xlabel('GDP')
+        plt.ylabel('Total energy consumption')
+        x_ticks = []
+        x_tick_1=100_000_000
+        for _ in range(8):
+            x_ticks.append(x_tick_1)
+            x_tick_1 = x_tick_1* 10
             
-            Parameters
-            --------------
-            self: class
-                The DataHandler Class itself
-            year: integer
-                The desired year for the the plot
-            
-            Returns:
-            --------------
-            Nothing. Plots the output to the screen
-            """
-            if type(year) not in [int]:
-                raise TypeError("Variable year is not an integer.")
-            
-            plot_data = self.data[self.data.index == year].copy()
-            plot_data = plot_data.fillna(0)
-            plot_data["total_energy_consumption"] = plot_data.loc[:,plot_data.columns.str.contains('consumption')].sum(axis=1)
-            
-            plt.figure(dpi=120)
-            np_pop = np.array(plot_data.population)
-            
-            
-            sns.scatterplot(plot_data.gdp, plot_data.total_energy_consumption, hue = plot_data.country, size = np_pop, sizes=(20,900), legend=False )
-            
-            plt.grid(True)
-            plt.xscale('log')
-            plt.xlabel('GDP')
-            plt.ylabel('Total energy consumption')
-            x_ticks = []
-            x=100_000_000
-            for i in range(8):
-                x_ticks.append(x)
-                x = x* 10
-            plt.xticks(x_ticks)
-            plt.yticks([50000,10000, 100000,200000, 300000, 400000])
-            plt.show()
+        
+        plt.xticks(x_ticks)
+        plt.yticks([50000,10000, 100000,200000, 300000, 400000])
+        plt.show()
 
 dataHandler = DataHandler()
 dataHandler.load_data()
