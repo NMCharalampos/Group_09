@@ -1,8 +1,10 @@
 import os
+from typing import List
+import matplotlib
+from matplotlib import pyplot as plt
+import matplotlib.ticker as mtick
 import requests
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick
 
 DATA_URL = "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv"
 DIRECTORY = os.path.join('downloads', 'Consumption.csv')
@@ -29,42 +31,64 @@ class DataHandler:
     def __init__(self):
         pass
 
-    def download(self, x):
-        print("download data ... ") #TODO
-        r = requests.get(x)
-        file_content = r.text
+    def download(self, url: str) -> None:
+        """downloads the given web resource and saves it to a file
+            the file and subfolder will be created if not already existent
+        Args:
+            url (str): url of the web resource
+        """
+        print("download data ... ")
+        request = requests.get(url)
+        file_content = request.text
         os.makedirs(os.path.dirname(DIRECTORY), exist_ok=True)
-        with open(DIRECTORY, "w") as f:
-            f.write(file_content)
+        with open(DIRECTORY, "w") as file:
+            file.write(file_content)
 
-    def load_data(self):
+    def load_data(self) -> None:
+        """loads the contents of a file into the attribute of this object
+            also filters data to the year after 1970
+        """
         if not os.path.isfile(DIRECTORY):
             self.download(DATA_URL)
-        print("read data ... ")     #TODO
+        print("read data ... ")
         self.data = pd.read_csv(DIRECTORY)
 
-        #filter accoringly to task
+        #filter accordingly to task
         self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
 
-    def list_countries(self):
+    def list_countries(self) -> List[str]:
+        """returns a list of all countries in the data set
+        Returns:
+            List[str]: list of unique countries
+        """
         return [country for country in self.data.country.unique()]
 
-    def plot_consumption1(self, country, normalize=False):
+    def plot_consumption(self, country: str, normalize: bool=False) -> matplotlib.axes.Axes:
+        """plots the energy consumption of the specified country
+        Args:
+            country (str): country
+            normalize (bool, optional): values are normalized. Defaults to False.
+        """
         if not self.is_country(country):
             return ValueError("This country does not exist.")
 
         plot_data = self.data[self.data.country == country].filter(regex="consumption")
         if normalize:
             plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
-        ax = plot_data.plot.area()
-        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
-        ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-        return ax
+        plot = plot_data.plot.area()
+        plot.yaxis.set_major_formatter(mtick.PercentFormatter())
+        plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+        return plot
 
-    def is_country(self, country):
+    def is_country(self, country: str) -> bool:
+        """checks wether a country is contained in the data set
+
+        Returns:
+            bool: True if country is in the data set
+        """
         return country in self.list_countries()
 
-    def compare_consumption(self,*countries:str): # To-Do: Name of "dfNew" (Nico's df2017)
+    def compare_consumption(self,*countries:str):
         """
 
         Plots the total sum of each energy consumption column in dataframe 'df' for
@@ -94,7 +118,7 @@ class DataHandler:
         ax2 = consumption.plot.bar(rot=0)
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
-    def gdp(self, *countries:str):
+def gdp(self, *countries:str):
         """
 
         Plots the GDP column over the years for
@@ -121,8 +145,3 @@ class DataHandler:
         plt.ylabel('GDP (in billion USD)')
         plt.legend()
         plt.show()
-
-dataHandler = DataHandler()
-dataHandler.load_data()
-
-dataHandler.compare_consumption('Germany1')
