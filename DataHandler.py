@@ -1,10 +1,10 @@
 import os
+from typing import List
+import matplotlib
+from matplotlib import pyplot as plt
+import matplotlib.ticker as mtick
 import requests
 import pandas as pd
-import matplotlib.ticker as mtick
-pd.plotting.register_matplotlib_converters()
-import matplotlib.pyplot as plt
-#%matplotlib inline
 import seaborn as sns
 import numpy as np
 
@@ -13,48 +13,140 @@ DIRECTORY = os.path.join('downloads', 'Consumption.csv')
 
 class DataHandler:
 
+    """
+    ...TBD...
+    
+    Methods
+    --------
+    compare_consumption()
+        Plots the total sum of each energy consumption column 
+        for countries selected in '*countries' as a bar chart.
+
+    gdp()
+        Plots the GDP column over the years for
+        countries selected in '*countries' as a line chart.
+
+    """
+
     data = pd.DataFrame
 
     def __init__(self):
         pass
 
-    def download(self, x):
-        print("download data ... ") #TODO
-        r = requests.get(x)
-        file_content = r.text
+    def download(self, url: str) -> None:
+        """downloads the given web resource and saves it to a file
+            the file and subfolder will be created if not already existent
+        Args:
+            url (str): url of the web resource
+        """
+        print("download data ... ")
+        request = requests.get(url)
+        file_content = request.text
         os.makedirs(os.path.dirname(DIRECTORY), exist_ok=True)
-        with open(DIRECTORY, "w") as f:
-            f.write(file_content)
+        with open(DIRECTORY, "w") as file:
+            file.write(file_content)
 
-    def load_data(self):
+    def load_data(self) -> None:
+        """loads the contents of a file into the attribute of this object
+            also filters data to the year after 1970
+        """
         if not os.path.isfile(DIRECTORY):
             self.download(DATA_URL)
-        print("read data ... ")     #TODO
+        print("read data ... ")
         self.data = pd.read_csv(DIRECTORY)
 
-        #filter accordingly to task 
+        #filter accordingly to task
         self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
 
-    def list_countries(self):
+    def list_countries(self) -> List[str]:
+        """returns a list of all countries in the data set
+        Returns:
+            List[str]: list of unique countries
+        """
         return [country for country in self.data.country.unique()]
 
-    def plot_consumption(self, country, normalize=False):
+    def plot_consumption(self, country: str, normalize: bool=False) -> matplotlib.axes.Axes:
+        """plots the energy consumption of the specified country
+        Args:
+            country (str): country
+            normalize (bool, optional): values are normalized. Defaults to False.
+        """
         if not self.is_country(country):
             return ValueError("This country does not exist.")
 
         plot_data = self.data[self.data.country == country].filter(regex="consumption")
         if normalize:
             plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
-        ax = plot_data.plot.area()
-        ax.yaxis.set_major_formatter(mtick.PercentFormatter())
-        ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-        return ax
+        plot = plot_data.plot.area()
+        plot.yaxis.set_major_formatter(mtick.PercentFormatter())
+        plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+        return plot
 
-    def is_country(self, country):
+    def is_country(self, country: str) -> bool:
+        """checks wether a country is contained in the data set
+
+        Returns:
+            bool: True if country is in the data set
+        """
         return country in self.list_countries()
 
+    def compare_consumption(self,*countries:str):
+        """
 
-    def gap_minder(self, year:int):
+        Plots the total sum of each energy consumption column 
+        for countries selected in '*countries' as a bar chart.
+
+        Parameters
+        ---------------
+        *countries: string
+            Countries that shall be plotted
+
+        Returns
+        ---------------
+        Nothing. Plots sum of different energy consumption per country in a bar chart.
+
+        """
+        consumption = pd.DataFrame()
+        countries_list = []
+        for country in countries:
+            if not self.is_country(country):
+                return ValueError("Country " + country + " does not exist.")
+            countries_list.append(country)
+            dfc = self.data.loc[self.data["country"] == country].filter(regex='consumption').sum()
+            consumption = consumption.append(dfc, ignore_index = True)
+            consumption.index = countries_list
+        ax2 = consumption.plot.bar(rot=0)
+        ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+
+def gdp(self, *countries:str):
+        """
+
+        Plots the GDP column over the years for
+        countries selected in '*countries' as a line chart.
+
+        Parameters
+        ---------------
+        *countries: string
+            Countries that shall be plotted
+
+        Returns
+        ---------------
+        Nothing. Plots GDP over the years per country in a line chart.
+
+        """
+        self.data = self.data.reset_index()
+        for country in countries:
+            if not self.is_country(country):
+                return ValueError("Country " + country + " does not exist.")
+            df_gdp = self.data.loc[self.data["country"] == country][['country','gdp','year']]
+            plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
+        plt.title('GDP Development')
+        plt.xlabel('Year')
+        plt.ylabel('GDP (in billion USD)')
+        plt.legend()
+        plt.show()
+    
+    def gap_minder(self, year:int) -> None:
         """
         Plots information about the relation of gdp, total energy consumption, and population
         Parameters
@@ -93,10 +185,3 @@ class DataHandler:
         plt.xticks(x_ticks)
         plt.yticks([50000,10000, 100000,200000, 300000, 400000])
         plt.show()
-
-dataHandler = DataHandler()
-dataHandler.load_data()
-dataHandler.plot_consumption('Kosovos')
-dataHandler.gap_minder(2003)
-
-
