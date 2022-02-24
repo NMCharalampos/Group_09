@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 import matplotlib.ticker as mtick
 import requests
 import pandas as pd
+import seaborn as sns
+import numpy as np
 
 DATA_URL = "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv"
 DIRECTORY = os.path.join('downloads', 'Consumption.csv')
@@ -142,4 +144,44 @@ def gdp(self, *countries:str):
         plt.xlabel('Year')
         plt.ylabel('GDP (in billion USD)')
         plt.legend()
+        plt.show()
+    
+    def gap_minder(self, year:int) -> None:
+        """
+        Plots information about the relation of gdp, total energy consumption, and population
+        Parameters
+        --------------
+        self: class
+            The DataHandler Class itself
+        year: integer
+            The desired year for the the plot
+        Returns:
+        --------------
+        Nothing. Plots the output to the screen
+        """
+        if type(year) not in [int]:
+            raise TypeError("Variable year is not an integer.")
+        plot_data = self.data[self.data.index == year].copy()
+        plot_data = plot_data.fillna(0)
+        plot_data["total_energy_consumption"] = plot_data.loc[:,plot_data.columns.str.contains('consumption')].sum(axis=1)
+        
+        plt.figure(dpi=120)
+        np_pop = np.array(plot_data.population)
+        
+        
+        sns.scatterplot(x=plot_data.gdp, y=plot_data.total_energy_consumption, hue = plot_data.country, size = np_pop, sizes=(20,900), legend=False)
+        
+        plt.grid(True)
+        plt.xscale('log')
+        plt.xlabel('GDP')
+        plt.ylabel('Total energy consumption')
+        x_ticks = []
+        x_tick_1=100_000_000
+        for _ in range(8):
+            x_ticks.append(x_tick_1)
+            x_tick_1 = x_tick_1* 10
+            
+        
+        plt.xticks(x_ticks)
+        plt.yticks([50000,10000, 100000,200000, 300000, 400000])
         plt.show()
