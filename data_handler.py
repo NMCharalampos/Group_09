@@ -163,7 +163,7 @@ class DataHandler:
             raise TypeError("Variable year is not an integer.")
         plot_data = self.data[self.data.index == year].copy()
         plot_data = plot_data.fillna(0)
-        plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum()
+        plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum(axis=1)
 
         plt.figure(dpi=120)
         np_pop = np.array(plot_data.population)
