@@ -78,7 +78,6 @@ class DataHandler:
         if normalize:
             plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
         plot = plot_data.plot.area()
-        plot.yaxis.set_major_formatter(mtick.PercentFormatter())
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
         return plot
 
