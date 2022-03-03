@@ -56,6 +56,7 @@ class DataHandler:
         self.data = pd.read_csv(DIRECTORY)
 
         #filter accordingly to task
+        self.data = self.data.drop('renewables_consumption', 1)
         self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
 
     def list_countries(self) -> List[str]:
@@ -118,33 +119,33 @@ class DataHandler:
         ax2 = consumption.plot.bar(rot=0)
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
-def gdp(self, *countries:str):
-        """
+    def gdp(self, *countries:str):
+            """
 
-        Plots the GDP column over the years for
-        countries selected in '*countries' as a line chart.
+            Plots the GDP column over the years for
+            countries selected in '*countries' as a line chart.
 
-        Parameters
-        ---------------
-        *countries: string
-            Countries that shall be plotted
+            Parameters
+            ---------------
+            *countries: string
+                Countries that shall be plotted
 
-        Returns
-        ---------------
-        Nothing. Plots GDP over the years per country in a line chart.
+            Returns
+            ---------------
+            Nothing. Plots GDP over the years per country in a line chart.
 
-        """
-        self.data = self.data.reset_index()
-        for country in countries:
-            if not self.is_country(country):
-                return ValueError("Country " + country + " does not exist.")
-            df_gdp = self.data.loc[self.data["country"] == country][['country','gdp','year']]
-            plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
-        plt.title('GDP Development')
-        plt.xlabel('Year')
-        plt.ylabel('GDP (in billion USD)')
-        plt.legend()
-        plt.show()
+            """
+            self.data = self.data.reset_index()
+            for country in countries:
+                if not self.is_country(country):
+                    return ValueError("Country " + country + " does not exist.")
+                df_gdp = self.data.loc[self.data["country"] == country][['country','gdp','year']]
+                plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
+            plt.title('GDP Development')
+            plt.xlabel('Year')
+            plt.ylabel('GDP (in billion USD)')
+            plt.legend()
+            plt.show()
     
     def gap_minder(self, year:int) -> None:
         """
@@ -164,15 +165,20 @@ def gdp(self, *countries:str):
         plot_data = self.data[self.data.index == year].copy()
         plot_data = plot_data.fillna(0)
         plot_data["total_energy_consumption"] = plot_data.loc[:,plot_data.columns.str.contains('consumption')].sum(axis=1)
-        
+        plot_data = plot_data[plot_data["country"].str.contains("World") == False]
+        plot_data = plot_data[plot_data["country"].str.contains("Africa") == False]
+        plot_data = plot_data[plot_data["country"].str.contains("Europe") == False]
+        plot_data = plot_data[plot_data["country"].str.contains("North America") == False]
+
         plt.figure(dpi=120)
         np_pop = np.array(plot_data.population)
         
         
-        sns.scatterplot(x=plot_data.gdp, y=plot_data.total_energy_consumption, hue = plot_data.country, size = np_pop, sizes=(20,900), legend=False)
+        sns.scatterplot(x=plot_data.gdp, y=plot_data.total_energy_consumption, alpha=.5, palette="muted", size = np_pop, sizes=(5,900), legend=False)
         
         plt.grid(True)
         plt.xscale('log')
+        plt.yscale('log')
         plt.xlabel('GDP')
         plt.ylabel('Total energy consumption')
         x_ticks = []
@@ -180,8 +186,6 @@ def gdp(self, *countries:str):
         for _ in range(8):
             x_ticks.append(x_tick_1)
             x_tick_1 = x_tick_1* 10
-            
-        
         plt.xticks(x_ticks)
-        plt.yticks([50000,10000, 100000,200000, 300000, 400000])
+        plt.yticks([1,10,100,1000,10000,100000])
         plt.show()
