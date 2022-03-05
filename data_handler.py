@@ -8,7 +8,6 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 
-DATA_URL = "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv"
 DIRECTORY = os.path.join('downloads', 'Consumption.csv')
 
 class DataHandler:
@@ -32,14 +31,15 @@ class DataHandler:
     def __init__(self):
         pass
 
-    def download(self, url: str) -> None:
+    def download(self) -> None:
         """downloads the given web resource and saves it to a file
             the file and subfolder will be created if not already existent
-        Args:
-            url (str): url of the web resource
+
         """
         print("download data ... ")
-        request = requests.get(url)
+
+        data_url = "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv"
+        request = requests.get(data_url)
         file_content = request.text
         os.makedirs(os.path.dirname(DIRECTORY), exist_ok=True)
         with open(DIRECTORY, "w") as file:
@@ -50,7 +50,7 @@ class DataHandler:
             also filters data to the year after 1970
         """
         if not os.path.isfile(DIRECTORY):
-            self.download(DATA_URL)
+            self.download()
         print("read data ... ")
         self.data = pd.read_csv(DIRECTORY)
 
@@ -77,7 +77,7 @@ class DataHandler:
         plot_data = self.data[self.data.country == country].filter(regex="consumption")
         if normalize:
             plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
-        plot = plot_data.plot.area()
+        plot = plot_data.plot.area(title= "Energy consumption in "+ country)
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
         return plot
 
