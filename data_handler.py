@@ -163,10 +163,10 @@ class DataHandler:
         plot_data = plot_data.fillna(0)
         plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum(axis=1)
 
-        plot_data = plot_data[plot_data["country"].str.contains("World") is False]
-        plot_data = plot_data[plot_data["country"].str.contains("Africa") is False]
-        plot_data = plot_data[plot_data["country"].str.contains("Europe") is False]
-        plot_data = plot_data[plot_data["country"].str.contains("North America") is False]
+        plot_data = plot_data[~ plot_data["country"].str.contains("World")]
+        plot_data = plot_data[~ plot_data["country"].str.contains("Africa")]
+        plot_data = plot_data[~ plot_data["country"].str.contains("Europe")]
+        plot_data = plot_data[~ plot_data["country"].str.contains("North America")]
 
         plt.figure(dpi=120)
         np_pop = np.array(plot_data.population)
