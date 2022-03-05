@@ -54,7 +54,7 @@ class DataHandler:
         self.data = pd.read_csv(DIRECTORY)
 
         #filter accordingly to task
-        self.data = self.data.drop('renewables_consumption', 1)
+        self.data = self.data.drop(['renewables_consumption', 'fossil_fuel_consumption', 'primary_energy_consumption', 'low_carbon_consumption'], 1)
         self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
 
     def list_countries(self) -> List[str]:
