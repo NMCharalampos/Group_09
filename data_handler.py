@@ -28,7 +28,7 @@ class DataHandler:
     data = pd.DataFrame
 
     def __init__(self):
-        pass
+        self.load_data()
 
     def download(self) -> None:
         """downloads the given web resource and saves it to a file
