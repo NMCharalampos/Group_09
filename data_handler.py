@@ -28,7 +28,7 @@ class DataHandler:
     data = pd.DataFrame
 
     def __init__(self):
-        pass
+        self.load_data()
 
     def download(self) -> None:
         """downloads the given web resource and saves it to a file
@@ -64,7 +64,7 @@ class DataHandler:
         """
         return [country for country in self.data.country.unique()]
 
-    def plot_consumption(self, country: str, normalize: bool=False) -> matplotlib.axes.Axes:
+    def plot_consumption(self, country: str, normalize: bool=False) -> None:
         """plots the energy consumption of the specified country
         Args:
             country (str): country
@@ -74,11 +74,21 @@ class DataHandler:
             return ValueError("This country does not exist.")
 
         plot_data = self.data[self.data.country == country].filter(regex="consumption")
+
+        title = "Energy consumption in "+ country
+        ylabel = "Energy consumptio in TWh"
+
         if normalize:
-            plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
-        plot = plot_data.plot.area(title= "Energy consumption in "+ country)
+            plot_data = plot_data.div(plot_data.sum(axis=1), axis=0)
+            title += " - normalized"
+            ylabel = "Energy consumption - relative"
+        
+
+        plot = plot_data.plot.area(title= title )
+
+        plot.set_ylabel(ylabel)
+        
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-        return plot
 
     def is_country(self, country: str) -> bool:
         """checks wether a country is contained in the data set
@@ -88,7 +98,7 @@ class DataHandler:
         """
         return country in self.list_countries()
 
-    def compare_consumption(self,*countries:str):
+    def compare_consumption(self,*countries:str) -> None:
         """
 
         Plots the total sum of each energy consumption column
@@ -113,10 +123,11 @@ class DataHandler:
             dfc = self.data.loc[self.data["country"] == country].filter(regex='consumption').sum()
             consumption = consumption.append(dfc, ignore_index = True)
             consumption.index = countries_list
-        ax2 = consumption.plot.bar(rot=0)
+        ax2 = consumption.plot.bar(rot=0, title="Comparison of energy consumption")
+        ax2.set_ylabel("Energy consumption in TWh")
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
-    def gdp(self, *countries:str):
+    def gdp(self, *countries:str) -> None:
         """
 
         Plots the GDP column over the years for
@@ -163,10 +174,10 @@ class DataHandler:
         plot_data = plot_data.fillna(0)
         plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum(axis=1)
 
-        plot_data = plot_data[plot_data["country"].str.contains("World") is False]
-        plot_data = plot_data[plot_data["country"].str.contains("Africa") is False]
-        plot_data = plot_data[plot_data["country"].str.contains("Europe") is False]
-        plot_data = plot_data[plot_data["country"].str.contains("North America") is False]
+        plot_data = plot_data[~ plot_data["country"].str.contains("World")]
+        plot_data = plot_data[~ plot_data["country"].str.contains("Africa")]
+        plot_data = plot_data[~ plot_data["country"].str.contains("Europe")]
+        plot_data = plot_data[~ plot_data["country"].str.contains("North America")]
 
         plt.figure(dpi=120)
         np_pop = np.array(plot_data.population)
@@ -183,8 +194,8 @@ class DataHandler:
         plt.grid(True)
         plt.xscale('log')
         plt.yscale('log')
-        plt.xlabel('GDP')
-        plt.ylabel('Total energy consumption')
+        plt.xlabel('GDP in $')
+        plt.ylabel('Total energy consumption in TWh ')
         x_ticks = []
         x_tick_1=100_000_000
         for _ in range(8):
@@ -193,4 +204,5 @@ class DataHandler:
 
         plt.xticks(x_ticks)
         plt.yticks([1,10,100,1000,10000,100000])
+        plt.title("Gapminder - " + str(year))
         plt.show()
