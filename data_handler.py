@@ -64,7 +64,7 @@ class DataHandler:
         """
         return [country for country in self.data.country.unique()]
 
-    def plot_consumption(self, country: str, normalize: bool=False) -> matplotlib.axes.Axes:
+    def plot_consumption(self, country: str, normalize: bool=False) -> None:
         """plots the energy consumption of the specified country
         Args:
             country (str): country
@@ -78,7 +78,6 @@ class DataHandler:
             plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
         plot = plot_data.plot.area(title= "Energy consumption in "+ country)
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-        return plot
 
     def is_country(self, country: str) -> bool:
         """checks wether a country is contained in the data set
@@ -88,7 +87,7 @@ class DataHandler:
         """
         return country in self.list_countries()
 
-    def compare_consumption(self,*countries:str):
+    def compare_consumption(self,*countries:str) -> None:
         """
 
         Plots the total sum of each energy consumption column
@@ -116,7 +115,7 @@ class DataHandler:
         ax2 = consumption.plot.bar(rot=0)
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
-    def gdp(self, *countries:str):
+    def gdp(self, *countries:str) -> None:
         """
 
         Plots the GDP column over the years for
