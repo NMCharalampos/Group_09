@@ -123,7 +123,8 @@ class DataHandler:
             dfc = self.data.loc[self.data["country"] == country].filter(regex='consumption').sum()
             consumption = consumption.append(dfc, ignore_index = True)
             consumption.index = countries_list
-        ax2 = consumption.plot.bar(rot=0)
+        ax2 = consumption.plot.bar(rot=0, title="Comparison of energy consumption")
+        ax2.set_ylabel("Energy consumption in TWh")
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
     def gdp(self, *countries:str) -> None:
