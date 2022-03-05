@@ -2,7 +2,6 @@ import os
 from typing import List
 import matplotlib
 from matplotlib import pyplot as plt
-import matplotlib.ticker as mtick
 import requests
 import pandas as pd
 import seaborn as sns
@@ -164,19 +163,26 @@ class DataHandler:
         plot_data = plot_data.fillna(0)
         plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum(axis=1)
 
+        plot_data = plot_data[plot_data["country"].str.contains("World") is False]
+        plot_data = plot_data[plot_data["country"].str.contains("Africa") is False]
+        plot_data = plot_data[plot_data["country"].str.contains("Europe") is False]
+        plot_data = plot_data[plot_data["country"].str.contains("North America") is False]
+
         plt.figure(dpi=120)
         np_pop = np.array(plot_data.population)
 
         sns.scatterplot(
             x=plot_data.gdp,
             y=plot_data.total_energy_consumption,
-            hue = plot_data.country,
+            alpha=.5,
+            palette="muted",
             size = np_pop,
             sizes=(20,900),
             legend=False)
 
         plt.grid(True)
         plt.xscale('log')
+        plt.yscale('log')
         plt.xlabel('GDP')
         plt.ylabel('Total energy consumption')
         x_ticks = []
@@ -186,5 +192,5 @@ class DataHandler:
             x_tick_1 = x_tick_1* 10
 
         plt.xticks(x_ticks)
-        plt.yticks([50000,10000, 100000,200000, 300000, 400000])
+        plt.yticks([1,10,100,1000,10000,100000])
         plt.show()
