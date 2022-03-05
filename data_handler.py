@@ -74,9 +74,15 @@ class DataHandler:
             return ValueError("This country does not exist.")
 
         plot_data = self.data[self.data.country == country].filter(regex="consumption")
+
+        title = "Energy consumption in "+ country
+
         if normalize:
-            plot_data = plot_data.diff(plot_data.sum(axis=1), axis=0)
-        plot = plot_data.plot.area(title= "Energy consumption in "+ country)
+            plot_data = plot_data.div(plot_data.sum(axis=1), axis=0)
+            title += " - normalized"
+        
+
+        plot = plot_data.plot.area(title= title )
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
     def is_country(self, country: str) -> bool:
