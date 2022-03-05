@@ -183,8 +183,8 @@ class DataHandler:
         plt.grid(True)
         plt.xscale('log')
         plt.yscale('log')
-        plt.xlabel('GDP')
-        plt.ylabel('Total energy consumption')
+        plt.xlabel('GDP in $')
+        plt.ylabel('Total energy consumption in TWh ')
         x_ticks = []
         x_tick_1=100_000_000
         for _ in range(8):
@@ -193,4 +193,5 @@ class DataHandler:
 
         plt.xticks(x_ticks)
         plt.yticks([1,10,100,1000,10000,100000])
+        plt.title("Gapminder - " + str(year))
         plt.show()
