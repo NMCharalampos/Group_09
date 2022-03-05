@@ -76,13 +76,18 @@ class DataHandler:
         plot_data = self.data[self.data.country == country].filter(regex="consumption")
 
         title = "Energy consumption in "+ country
+        ylabel = "Energy consumptio in TWh"
 
         if normalize:
             plot_data = plot_data.div(plot_data.sum(axis=1), axis=0)
             title += " - normalized"
+            ylabel = "Energy consumption - relative"
         
 
         plot = plot_data.plot.area(title= title )
+
+        plot.set_ylabel(ylabel)
+        
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
     def is_country(self, country: str) -> bool:
