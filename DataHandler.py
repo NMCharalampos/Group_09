@@ -28,17 +28,60 @@ class DataHandler:
         with open(DIRECTORY, "w") as file:
             file.write(file_content)
 
-    def load_data(self) -> None:
-        """loads the contents of a file into the attribute of this object
-            also filters data to the year after 1970
-        """
-        if not os.path.isfile(DIRECTORY):
-            self.download(DATA_URL)
-        print("read data ... ")
-        self.data = pd.read_csv(DIRECTORY)
+    def load_data(self) -> None: # --> Check with Niklas/David for updated function
+            """loads the contents of a file into the attribute of this object,
+            filters data to the years after 1970, 
+            sets years as index in datetime format
+            """
+            if not os.path.isfile(DIRECTORY):
+                self.download(DATA_URL)
+            print("read data ... ")
+            self.data = pd.read_csv(DIRECTORY)
 
-        #filter accordingly to task
-        self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
+            #filter years
+            self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
+            
+            # convert year to datetime and set as index
+            self.data["Year"] = pd.to_datetime(self.data['year'], format='%Y').dt.strftime('%Y')
+            self.data = self.data.drop("year", axis=1)
+            self.data.set_index('Year', inplace=True)
+
+    def clean_data(self) -> None:
+        """drops aggregated "_consumption" columns,
+        drops "_consumption" columns irrelevant for energy mix analysis,
+        creates column with total consumption,
+        fills NaN values with 0
+        """
+        #drop aggregated and irrelevant consumption columns
+        self.data = self.data.drop(["renewables_consumption", "fossil_fuel_consumption", "low_carbon_consumption", \
+                                    "primary_energy_consumption"], axis=1)
+        
+        #select consumption columns, create total column and fill NaN values with 0
+        self.data = self.data[["country","biofuel_consumption","coal_consumption","gas_consumption",\
+                               "hydro_consumption","nuclear_consumption","oil_consumption","other_renewable_consumption",\
+                               "solar_consumption","wind_consumption"]]
+        self.data["Consumption_Total"]=self.data.sum(axis=1)
+        self.data = self.data.fillna(0)
+
+    def enrich_data(self) -> None:
+        """enriches dataframe with emission column for each consumption column relevanz ,
+        creates column with total emissions
+        """   
+        #create emission columns
+        self.data["biofuel_emission"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) 
+        self.data["coal_emission"] = self.data['coal_consumption'] * ((1e9 * 1000)/1e6)
+        self.data["gas_emission"] = self.data['gas_consumption'] * ((1e9 * 455)/1e6) 
+        self.data["hydro_emission"] = self.data['hydro_consumption'] * ((1e9 * 90)/1e6)
+        self.data["nuclear_emission"] = self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) 
+        self.data["oil_emission"] = self.data['oil_consumption'] * ((1e9 * 1200)/1e6)
+        self.data["solar_emission"] = self.data['solar_consumption'] * ((1e9 * 53)/1e6)
+        self.data["wind_emission"] = self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+        
+        self.data["Emissions_Total"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) + \
+        self.data['coal_consumption'] * ((1e9 * 1000)/1e6) + self.data['gas_consumption'] * ((1e9 * 455)/1e6) + \
+        self.data['hydro_consumption'] * ((1e9 * 90)/1e6) + self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) + \
+        self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
+        self.data['wind_consumption'] * ((1e9 * 14)/1e6)
 
     def list_countries(self) -> List[str]:
         """returns a list of all countries in the data set
