@@ -206,3 +206,25 @@ class DataHandler:
         plt.yticks([1,10,100,1000,10000,100000])
         plt.title("Gapminder - " + str(year))
         plt.show()
+
+    def enrich_data(self) -> None:
+        """enriches dataframe with emission column for each consumption column relevanz ,
+        creates column with total emissions
+        """   
+        #create emission columns
+        self.data["biofuel_emission"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) 
+        self.data["coal_emission"] = self.data['coal_consumption'] * ((1e9 * 1000)/1e6)
+        self.data["gas_emission"] = self.data['gas_consumption'] * ((1e9 * 455)/1e6) 
+        self.data["hydro_emission"] = self.data['hydro_consumption'] * ((1e9 * 90)/1e6)
+        self.data["nuclear_emission"] = self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) 
+        self.data["oil_emission"] = self.data['oil_consumption'] * ((1e9 * 1200)/1e6)
+        self.data["solar_emission"] = self.data['solar_consumption'] * ((1e9 * 53)/1e6)
+        self.data["wind_emission"] = self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+        
+        self.data["Emissions_Total"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) + \
+        self.data['coal_consumption'] * ((1e9 * 1000)/1e6) + self.data['gas_consumption'] * ((1e9 * 455)/1e6) + \
+        self.data['hydro_consumption'] * ((1e9 * 90)/1e6) + self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) + \
+        self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
+        self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+        
+        print(self.data)
