@@ -185,7 +185,7 @@ class DataHandler:
         arimaDF = self.data[['country','Consumption_Total','Emissions_Total']]
         arimaDF = arimaDF.loc[arimaDF["country"] ==country]
         
-        ####### Create two dataframes #######
+
         dfEmissions = arimaDF.drop(["country", "Consumption_Total"], axis=1)
         dfEmissions = dfEmissions.rename(columns= {"Emissions_Total": "value"}) 
         dfEmissions = dfEmissions.reset_index()
@@ -196,7 +196,7 @@ class DataHandler:
 
         legends = ["Predicted Consumption", "Predicted Emission"]
         colors= ["red","blue"]
-        ####### Prepare for arima #############
+
         fig, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10)) 
         for df in [dfConsumption, dfEmissions]:
             time_series = df.set_index(df.columns[0])
