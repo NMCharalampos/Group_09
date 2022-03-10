@@ -6,6 +6,12 @@ import requests
 import pandas as pd
 import seaborn as sns
 import numpy as np
+import warnings
+
+from sympy import plot
+warnings.filterwarnings("ignore")
+
+
 
 DIRECTORY = os.path.join('downloads', 'Consumption.csv')
 
@@ -52,10 +58,60 @@ class DataHandler:
             self.download()
         print("read data ... ")
         self.data = pd.read_csv(DIRECTORY)
+        
+        self.clean_data()
+        self.enrich_data()
+        
+    def clean_data(self) -> None:
+        """drops aggregated "_consumption" columns,
+        drops "_consumption" columns irrelevant for energy mix analysis,
+        creates column with total consumption,
+        fills NaN values with 0
+        """
 
-        #filter accordingly to task
-        self.data = self.data.drop(['renewables_consumption', 'fossil_fuel_consumption', 'primary_energy_consumption', 'low_carbon_consumption'], 1)
-        self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
+        self.data = self.data.loc[self.data['year'] >= 1970]
+        self.data = self.data.loc[self.data['year']<2020]
+
+        # convert year to datetime and set as index
+        self.data["year"] = pd.to_datetime(self.data['year'], format='%Y').dt.strftime('%Y')
+        # self.data = self.data.drop("year", axis=1)
+        self.data.set_index('year', inplace=True)
+        
+        #drop aggregated and irrelevant consumption columns
+        self.data = self.data.drop(["renewables_consumption", "fossil_fuel_consumption", "low_carbon_consumption", \
+                                    "primary_energy_consumption"], axis=1)
+        
+        #select consumption columns, create total column and fill NaN values with 0
+        # self.data = self.data[["country","gdp","biofuel_consumption","coal_consumption","gas_consumption",\
+        #                        "hydro_consumption","nuclear_consumption","oil_consumption","other_renewable_consumption",\
+        #                        "solar_consumption","wind_consumption", "population"]]
+
+        self.data["Consumption_Total"]=self.data.filter(regex='consumption').sum(axis = 1)
+
+        self.data = self.data.fillna(0)
+        
+            
+    def enrich_data(self) -> None:
+        """enriches dataframe with emission column for each consumption column relevanz ,
+        creates column with total emissions
+        """   
+
+        #create emission columns
+        self.data["biofuel_emission"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) 
+        self.data["coal_emission"] = self.data['coal_consumption'] * ((1e9 * 1000)/1e6)
+        self.data["gas_emission"] = self.data['gas_consumption'] * ((1e9 * 455)/1e6) 
+        self.data["hydro_emission"] = self.data['hydro_consumption'] * ((1e9 * 90)/1e6)
+        self.data["nuclear_emission"] = self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) 
+        self.data["oil_emission"] = self.data['oil_consumption'] * ((1e9 * 1200)/1e6)
+        self.data["solar_emission"] = self.data['solar_consumption'] * ((1e9 * 53)/1e6)
+        self.data["wind_emission"] = self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+        
+        self.data["Emissions_Total"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) + \
+            self.data['coal_consumption'] * ((1e9 * 1000)/1e6) + self.data['gas_consumption'] * ((1e9 * 455)/1e6) + \
+            self.data['hydro_consumption'] * ((1e9 * 90)/1e6) + self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) + \
+            self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
+            self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+        
 
     def list_countries(self) -> List[str]:
         """returns a list of all countries in the data set
@@ -170,8 +226,12 @@ class DataHandler:
         """
         if type(year) not in [int]:
             raise TypeError("Variable year is not an integer.")
-        plot_data = self.data[self.data.index == year].copy()
+        plot_data = self.data.copy()
+        plot_data = plot_data.reset_index()
+        plot_data.year = plot_data.year.astype(int)
+        plot_data = plot_data.loc[plot_data.year == year]
         plot_data = plot_data.fillna(0)
+
         plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum(axis=1)
 
         plot_data = plot_data[~ plot_data["country"].str.contains("World")]
