@@ -8,6 +8,9 @@ import seaborn as sns
 import numpy as np
 import warnings
 
+from statsmodels.tsa.arima.model import ARIMA
+
+
 from sympy import plot
 warnings.filterwarnings("ignore")
 
@@ -199,11 +202,13 @@ class DataHandler:
         Nothing. Plots GDP over the years per country in a line chart.
 
         """
-        self.data = self.data.reset_index()
+        gdp_data = self.data.copy()
+        gdp_data.reset_index(inplace=True)
+
         for country in countries:
             if not self.is_country(country):
                 return ValueError("Country " + country + " does not exist.")
-            df_gdp = self.data.loc[self.data["country"] == country][['country','gdp','year']]
+            df_gdp = gdp_data.loc[gdp_data["country"] == country][['country','gdp','year']]
             plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
         plt.title('GDP Development')
         plt.xlabel('Year')
@@ -281,3 +286,65 @@ class DataHandler:
         plt.xlabel("Consumption_Total")
         plt.ylabel("emissions")
         plt.show()
+
+    def arima_predict(self, country, period):
+        """
+    
+        Plots the predicted emissions and consumption over a specified period of years of
+        a country selected in 'country' as two line charts.
+
+        Parameters
+        ---------------
+        country: string
+            Country that shall be plotted
+        
+        period: int
+            Number of predicted years
+
+        Returns
+        ---------------
+        Nothing. Plots emissions and consumption over a specified period of years.
+
+        """
+
+        i=0
+        if type(period) not in [int] or period <1:
+            raise TypeError("Variable period is not an integer above zero.")
+    
+        if not self.is_country(country):
+            return ValueError("This country does not exist.")
+        
+        arima_df = self.data[['country','Consumption_Total','Emissions_Total']].copy()
+        arima_df = arima_df.loc[arima_df["country"] ==country]
+        
+        ####### Create two dataframes #######
+        df_emissions = arima_df.drop(["country", "Consumption_Total"], axis=1)
+        df_emissions = df_emissions.rename(columns= {"Emissions_Total": "value"}) 
+        df_emissions = df_emissions.reset_index()
+
+        df_consumption = arima_df.drop(["country", "Emissions_Total"], axis=1)
+        df_consumption = df_consumption.rename(columns= {"Consumption_Total": "value"})
+        df_consumption = df_consumption.reset_index()
+
+        legends = ["Predicted Consumption", "Predicted Emission"]
+        colors= ["red","blue"]
+        ####### Prepare for arima #############
+        fig, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10)) 
+        for df in [df_consumption, df_emissions]:
+            time_series = df.set_index(df.columns[0])
+            npts = 5 
+            train = time_series[:-npts]
+            test = time_series[-npts:]
+
+            model = ARIMA(train.values, order=(5, 1, 5), dates=train.index)
+            model_fit = model.fit()
+
+            prediction = pd.DataFrame(model_fit.predict(start=48, end=48+period, dynamic=True))
+            prediction['Time'] = pd.date_range(start='2020-01-01', periods= period+1, freq='YS')
+            prediction.set_index('Time', inplace=True)
+
+            prediction.plot(ax=axes[i],kind='line', c = colors[i])
+            axes[i].set_title('Emission')
+            axes[0].set_title('Consumption')
+            axes[i].legend(title=legends[i])
+            i = i+1
