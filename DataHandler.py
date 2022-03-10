@@ -1,6 +1,7 @@
+from statsmodels.tsa.arima.model import ARIMA
 import os
 from typing import List
-import matplotlib
+import matplotlib as plt
 import matplotlib.ticker as mtick
 import requests
 import pandas as pd
@@ -132,6 +133,7 @@ class DataHandler:
         """enriches dataframe with emission column for each consumption column relevanz ,
         creates column with total emissions
         """   
+        dataHandler = DataHandler()
         self.data = dataHandler.clean_data() 
         
         #create emission columns
@@ -151,3 +153,70 @@ class DataHandler:
         self.data['wind_consumption'] * ((1e9 * 14)/1e6)
         
         return self.data
+
+    def arima_predict(self, country, period):
+        """
+    
+        Plots the predicted emissions and consumption over a specified period of years of
+        a country selected in 'country' as two line charts.
+
+        Parameters
+        ---------------
+        country: string
+            Country that shall be plotted
+        
+        period: int
+            Number of predicted years
+
+        Returns
+        ---------------
+        Nothing. Plots emissions and consumption over a specified period of years.
+
+        """
+        dataHandler = DataHandler()
+        self.data = dataHandler.enrich_data()
+        i=0
+        if type(period) not in [int] or period <1:
+            raise TypeError("Variable period is not an integer above zero.")
+    
+        if not self.is_country(country):
+            return ValueError("This country does not exist.")
+        
+        arimaDF = self.data[['country','Consumption_Total','Emissions_Total']]
+        arimaDF = arimaDF.loc[arimaDF["country"] ==country]
+        
+        ####### Create two dataframes #######
+        dfEmissions = arimaDF.drop(["country", "Consumption_Total"], axis=1)
+        dfEmissions = dfEmissions.rename(columns= {"Emissions_Total": "value"}) 
+        dfEmissions = dfEmissions.reset_index()
+
+        dfConsumption = arimaDF.drop(["country", "Emissions_Total"], axis=1)
+        dfConsumption = dfConsumption.rename(columns= {"Consumption_Total": "value"})
+        dfConsumption = dfConsumption.reset_index()
+
+        legends = ["Predicted Consumption", "Predicted Emission"]
+        colors= ["red","blue"]
+        ####### Prepare for arima #############
+        fig, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10)) 
+        for df in [dfConsumption, dfEmissions]:
+            time_series = df.set_index(df.columns[0])
+            npts = 5 
+            train = time_series[:-npts]
+            test = time_series[-npts:]
+
+            model = ARIMA(train.values, order=(5, 1, 5), dates=train.index)
+            model_fit = model.fit()
+            forecast_data =  model_fit.predict(len(train), len(train)+npts-1)
+            forecast_index = test.index
+            forecast = pd.Series(data=forecast_data, index=forecast_index)
+            prediction = pd.DataFrame(model_fit.predict(start=48, end=48+period, dynamic=True))
+            prediction['Time'] = pd.date_range(start='2020-01-01', periods= period+1, freq='YS')
+            prediction.set_index('Time', inplace=True)
+
+
+            prediction.plot(ax=axes[i],kind='line', c = colors[i])
+            axes[i].set_title('Emission')
+            axes[0].set_title('Consumption')
+            axes[i].legend(title=legends[i])
+            i = i+1
+
