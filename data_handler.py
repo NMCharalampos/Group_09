@@ -1,17 +1,14 @@
 import os
+import warnings
 from typing import List
-import matplotlib
 from matplotlib import pyplot as plt
 import requests
 import pandas as pd
 import seaborn as sns
 import numpy as np
-import warnings
 
 from statsmodels.tsa.arima.model import ARIMA
 
-
-from sympy import plot
 warnings.filterwarnings("ignore")
 
 
@@ -61,10 +58,10 @@ class DataHandler:
             self.download()
         print("read data ... ")
         self.data = pd.read_csv(DIRECTORY)
-        
+
         self.clean_data()
         self.enrich_data()
-        
+
     def clean_data(self) -> None:
         """drops aggregated "_consumption" columns,
         drops "_consumption" columns irrelevant for energy mix analysis,
@@ -79,11 +76,11 @@ class DataHandler:
         self.data["year"] = pd.to_datetime(self.data['year'], format='%Y').dt.strftime('%Y')
         # self.data = self.data.drop("year", axis=1)
         self.data.set_index('year', inplace=True)
-        
+
         #drop aggregated and irrelevant consumption columns
         self.data = self.data.drop(["renewables_consumption", "fossil_fuel_consumption", "low_carbon_consumption", \
                                     "primary_energy_consumption"], axis=1)
-        
+
         #select consumption columns, create total column and fill NaN values with 0
         # self.data = self.data[["country","gdp","biofuel_consumption","coal_consumption","gas_consumption",\
         #                        "hydro_consumption","nuclear_consumption","oil_consumption","other_renewable_consumption",\
@@ -92,12 +89,12 @@ class DataHandler:
         self.data["Consumption_Total"]=self.data.filter(regex='consumption').sum(axis = 1)
 
         self.data = self.data.fillna(0)
-        
-            
+
+
     def enrich_data(self) -> None:
         """enriches dataframe with emission column for each consumption column relevanz ,
         creates column with total emissions
-        """   
+        """
 
         #create emission columns
         self.data["biofuel_emission"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) 
@@ -108,13 +105,13 @@ class DataHandler:
         self.data["oil_emission"] = self.data['oil_consumption'] * ((1e9 * 1200)/1e6)
         self.data["solar_emission"] = self.data['solar_consumption'] * ((1e9 * 53)/1e6)
         self.data["wind_emission"] = self.data['wind_consumption'] * ((1e9 * 14)/1e6)
-        
+
         self.data["Emissions_Total"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) + \
             self.data['coal_consumption'] * ((1e9 * 1000)/1e6) + self.data['gas_consumption'] * ((1e9 * 455)/1e6) + \
             self.data['hydro_consumption'] * ((1e9 * 90)/1e6) + self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) + \
             self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
             self.data['wind_consumption'] * ((1e9 * 14)/1e6)
-        
+
 
     def list_countries(self) -> List[str]:
         """returns a list of all countries in the data set
@@ -130,7 +127,7 @@ class DataHandler:
             normalize (bool, optional): values are normalized. Defaults to False.
         """
         if not self.is_country(country):
-            return ValueError("This country does not exist.")
+            raise ValueError("This country does not exist.")
 
         plot_data = self.data[self.data.country == country].filter(regex="consumption")
 
@@ -141,12 +138,11 @@ class DataHandler:
             plot_data = plot_data.div(plot_data.sum(axis=1), axis=0)
             title += " - normalized"
             ylabel = "Energy consumption - relative"
-        
+
 
         plot = plot_data.plot.area(title= title )
 
         plot.set_ylabel(ylabel)
-        
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
     def is_country(self, country: str) -> bool:
@@ -207,7 +203,7 @@ class DataHandler:
 
         for country in countries:
             if not self.is_country(country):
-                return ValueError("Country " + country + " does not exist.")
+                raise ValueError("Country " + country + " does not exist.")
             df_gdp = gdp_data.loc[gdp_data["country"] == country][['country','gdp','year']]
             plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
         plt.title('GDP Development')
@@ -273,7 +269,8 @@ class DataHandler:
         plt.show()
 
     def scatter_plot(self):
-        
+
+
         scatter_data = self.data.copy()
 
         scatter_data = scatter_data.groupby(["country"]).mean()
@@ -287,7 +284,7 @@ class DataHandler:
         plt.ylabel("emissions")
         plt.show()
 
-    def arima_predict(self, country, period):
+    def arima_predict(self, country: str, period: int):
         """
     
         Plots the predicted emissions and consumption over a specified period of years of
@@ -329,12 +326,11 @@ class DataHandler:
         legends = ["Predicted Consumption", "Predicted Emission"]
         colors= ["red","blue"]
         ####### Prepare for arima #############
-        fig, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10)) 
+        _, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10))
         for df in [df_consumption, df_emissions]:
             time_series = df.set_index(df.columns[0])
-            npts = 5 
+            npts = 5
             train = time_series[:-npts]
-            test = time_series[-npts:]
 
             model = ARIMA(train.values, order=(5, 1, 5), dates=train.index)
             model_fit = model.fit()
