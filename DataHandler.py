@@ -220,3 +220,20 @@ class DataHandler:
             axes[i].legend(title=legends[i])
             i = i+1
 
+        def scatterPlot(self):
+        
+            dataHandler = DataHandler()
+            self.data = dataHandler.enrich_data()
+            
+            countryList = self.data["country"].unique()
+            self.data = self.data.groupby(["country"]).mean()
+            self.data = self.data.drop(index=["World", "Africa","Europe","North America"], axis=0).reset_index()
+            plt.figure(figsize=(12, 6))
+            for country in countryList:
+                df1 = self.data.loc[self.data["country"] == country]
+                plt.scatter(x = df1['Consumption_Total'], y = df1['Emissions_Total'], s = df1['population']/300000, alpha = 0.5)
+
+            plt.xlabel("Consumption_Total")
+            plt.ylabel("emissions")
+            plt.show()
+
