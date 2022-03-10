@@ -266,3 +266,18 @@ class DataHandler:
         plt.yticks([1,10,100,1000,10000,100000])
         plt.title("Gapminder - " + str(year))
         plt.show()
+
+    def scatterPlot(self):
+        
+        scatter_data = self.data.copy()
+
+        scatter_data = scatter_data.groupby(["country"]).mean()
+        scatter_data = scatter_data.drop(index=["World", "Africa","Europe","North America"], axis=0).reset_index()
+        plt.figure(figsize=(12, 6))
+        for country in self.list_countries():
+            df1 = scatter_data.loc[scatter_data["country"] == country]
+            plt.scatter(x = df1['Consumption_Total'], y = df1['Emissions_Total'], s = df1['population']/300000, alpha = 0.5)
+        #mplcursors.cursor(hover=True)
+        plt.xlabel("Consumption_Total")
+        plt.ylabel("emissions")
+        plt.show()
