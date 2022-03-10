@@ -1,11 +1,17 @@
 import os
+import warnings
 from typing import List
-import matplotlib
 from matplotlib import pyplot as plt
 import requests
 import pandas as pd
 import seaborn as sns
 import numpy as np
+
+from statsmodels.tsa.arima.model import ARIMA
+
+warnings.filterwarnings("ignore")
+
+
 
 DIRECTORY = os.path.join('downloads', 'Consumption.csv')
 
@@ -53,9 +59,59 @@ class DataHandler:
         print("read data ... ")
         self.data = pd.read_csv(DIRECTORY)
 
-        #filter accordingly to task
-        self.data = self.data.drop(['renewables_consumption', 'fossil_fuel_consumption', 'primary_energy_consumption', 'low_carbon_consumption'], 1)
-        self.data = self.data.loc[self.data['year'] >= 1970].set_index('year')
+        self.clean_data()
+        self.enrich_data()
+
+    def clean_data(self) -> None:
+        """drops aggregated "_consumption" columns,
+        drops "_consumption" columns irrelevant for energy mix analysis,
+        creates column with total consumption,
+        fills NaN values with 0
+        """
+
+        self.data = self.data.loc[self.data['year'] >= 1970]
+        self.data = self.data.loc[self.data['year']<2020]
+
+        # convert year to datetime and set as index
+        self.data["year"] = pd.to_datetime(self.data['year'], format='%Y').dt.strftime('%Y')
+        # self.data = self.data.drop("year", axis=1)
+        self.data.set_index('year', inplace=True)
+
+        #drop aggregated and irrelevant consumption columns
+        self.data = self.data.drop(["renewables_consumption", "fossil_fuel_consumption", "low_carbon_consumption", \
+                                    "primary_energy_consumption"], axis=1)
+
+        #select consumption columns, create total column and fill NaN values with 0
+        # self.data = self.data[["country","gdp","biofuel_consumption","coal_consumption","gas_consumption",\
+        #                        "hydro_consumption","nuclear_consumption","oil_consumption","other_renewable_consumption",\
+        #                        "solar_consumption","wind_consumption", "population"]]
+
+        self.data["Consumption_Total"]=self.data.filter(regex='consumption').sum(axis = 1)
+
+        self.data = self.data.fillna(0)
+
+
+    def enrich_data(self) -> None:
+        """enriches dataframe with emission column for each consumption column relevanz ,
+        creates column with total emissions
+        """
+
+        #create emission columns
+        self.data["biofuel_emission"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) 
+        self.data["coal_emission"] = self.data['coal_consumption'] * ((1e9 * 1000)/1e6)
+        self.data["gas_emission"] = self.data['gas_consumption'] * ((1e9 * 455)/1e6) 
+        self.data["hydro_emission"] = self.data['hydro_consumption'] * ((1e9 * 90)/1e6)
+        self.data["nuclear_emission"] = self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) 
+        self.data["oil_emission"] = self.data['oil_consumption'] * ((1e9 * 1200)/1e6)
+        self.data["solar_emission"] = self.data['solar_consumption'] * ((1e9 * 53)/1e6)
+        self.data["wind_emission"] = self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+
+        self.data["Emissions_Total"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) + \
+            self.data['coal_consumption'] * ((1e9 * 1000)/1e6) + self.data['gas_consumption'] * ((1e9 * 455)/1e6) + \
+            self.data['hydro_consumption'] * ((1e9 * 90)/1e6) + self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) + \
+            self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
+            self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+
 
     def list_countries(self) -> List[str]:
         """returns a list of all countries in the data set
@@ -71,7 +127,7 @@ class DataHandler:
             normalize (bool, optional): values are normalized. Defaults to False.
         """
         if not self.is_country(country):
-            return ValueError("This country does not exist.")
+            raise ValueError("This country does not exist.")
 
         plot_data = self.data[self.data.country == country].filter(regex="consumption")
 
@@ -82,12 +138,11 @@ class DataHandler:
             plot_data = plot_data.div(plot_data.sum(axis=1), axis=0)
             title += " - normalized"
             ylabel = "Energy consumption - relative"
-        
+
 
         plot = plot_data.plot.area(title= title )
 
         plot.set_ylabel(ylabel)
-        
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
     def is_country(self, country: str) -> bool:
@@ -143,11 +198,13 @@ class DataHandler:
         Nothing. Plots GDP over the years per country in a line chart.
 
         """
-        self.data = self.data.reset_index()
+        gdp_data = self.data.copy()
+        gdp_data.reset_index(inplace=True)
+
         for country in countries:
             if not self.is_country(country):
-                return ValueError("Country " + country + " does not exist.")
-            df_gdp = self.data.loc[self.data["country"] == country][['country','gdp','year']]
+                raise ValueError("Country " + country + " does not exist.")
+            df_gdp = gdp_data.loc[gdp_data["country"] == country][['country','gdp','year']]
             plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
         plt.title('GDP Development')
         plt.xlabel('Year')
@@ -170,8 +227,12 @@ class DataHandler:
         """
         if type(year) not in [int]:
             raise TypeError("Variable year is not an integer.")
-        plot_data = self.data[self.data.index == year].copy()
+        plot_data = self.data.copy()
+        plot_data = plot_data.reset_index()
+        plot_data.year = plot_data.year.astype(int)
+        plot_data = plot_data.loc[plot_data.year == year]
         plot_data = plot_data.fillna(0)
+
         plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum(axis=1)
 
         plot_data = plot_data[~ plot_data["country"].str.contains("World")]
@@ -206,3 +267,80 @@ class DataHandler:
         plt.yticks([1,10,100,1000,10000,100000])
         plt.title("Gapminder - " + str(year))
         plt.show()
+
+    def scatter_plot(self):
+
+
+        scatter_data = self.data.copy()
+
+        scatter_data = scatter_data.groupby(["country"]).mean()
+        scatter_data = scatter_data.drop(index=["World", "Africa","Europe","North America"], axis=0).reset_index()
+        plt.figure(figsize=(12, 6))
+        for country in self.list_countries():
+            df1 = scatter_data.loc[scatter_data["country"] == country]
+            plt.scatter(x = df1['Consumption_Total'], y = df1['Emissions_Total'], s = df1['population']/300000, alpha = 0.5)
+        #mplcursors.cursor(hover=True)
+        plt.xlabel("Consumption_Total")
+        plt.ylabel("emissions")
+        plt.show()
+
+    def arima_predict(self, country: str, period: int):
+        """
+    
+        Plots the predicted emissions and consumption over a specified period of years of
+        a country selected in 'country' as two line charts.
+
+        Parameters
+        ---------------
+        country: string
+            Country that shall be plotted
+        
+        period: int
+            Number of predicted years
+
+        Returns
+        ---------------
+        Nothing. Plots emissions and consumption over a specified period of years.
+
+        """
+
+        i=0
+        if type(period) not in [int] or period <1:
+            raise TypeError("Variable period is not an integer above zero.")
+    
+        if not self.is_country(country):
+            return ValueError("This country does not exist.")
+        
+        arima_df = self.data[['country','Consumption_Total','Emissions_Total']].copy()
+        arima_df = arima_df.loc[arima_df["country"] ==country]
+        
+        ####### Create two dataframes #######
+        df_emissions = arima_df.drop(["country", "Consumption_Total"], axis=1)
+        df_emissions = df_emissions.rename(columns= {"Emissions_Total": "value"}) 
+        df_emissions = df_emissions.reset_index()
+
+        df_consumption = arima_df.drop(["country", "Emissions_Total"], axis=1)
+        df_consumption = df_consumption.rename(columns= {"Consumption_Total": "value"})
+        df_consumption = df_consumption.reset_index()
+
+        legends = ["Predicted Consumption", "Predicted Emission"]
+        colors= ["red","blue"]
+        ####### Prepare for arima #############
+        _, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10))
+        for df in [df_consumption, df_emissions]:
+            time_series = df.set_index(df.columns[0])
+            npts = 5
+            train = time_series[:-npts]
+
+            model = ARIMA(train.values, order=(5, 1, 5), dates=train.index)
+            model_fit = model.fit()
+
+            prediction = pd.DataFrame(model_fit.predict(start=48, end=48+period, dynamic=True))
+            prediction['Time'] = pd.date_range(start='2020-01-01', periods= period+1, freq='YS')
+            prediction.set_index('Time', inplace=True)
+
+            prediction.plot(ax=axes[i],kind='line', c = colors[i])
+            axes[i].set_title('Emission')
+            axes[0].set_title('Consumption')
+            axes[i].legend(title=legends[i])
+            i = i+1
