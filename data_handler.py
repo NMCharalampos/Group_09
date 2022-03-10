@@ -267,7 +267,7 @@ class DataHandler:
         plt.title("Gapminder - " + str(year))
         plt.show()
 
-    def scatterPlot(self):
+    def scatter_plot(self):
         
         scatter_data = self.data.copy()
 
