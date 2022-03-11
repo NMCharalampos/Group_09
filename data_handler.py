@@ -2,6 +2,7 @@ import os
 import warnings
 from typing import List
 from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1 import host_subplot
 import requests
 import pandas as pd
 import seaborn as sns
@@ -170,17 +171,36 @@ class DataHandler:
 
         """
         consumption = pd.DataFrame()
+        emission = pd.DataFrame()
+
         countries_list = []
         for country in countries:
             if not self.is_country(country):
-                return ValueError("Country " + country + " does not exist.")
+                raise ValueError("Country " + country + " does not exist.")
             countries_list.append(country)
             dfc = self.data.loc[self.data["country"] == country].filter(regex='consumption').sum()
+            dfe = self.data.loc[self.data["country"] == country].filter(regex='emission').sum()
+
+            emission = emission.append(dfe, ignore_index=True)
             consumption = consumption.append(dfc, ignore_index = True)
             consumption.index = countries_list
-        ax2 = consumption.plot.bar(rot=0, title="Comparison of energy consumption")
+            emission.index = countries_list
+
+        fig = plt.figure() # Create matplotlib figure
+
+        ax = fig.add_subplot(111) # Create matplotlib axes
+        ax2 = ax.twinx() # Create another axes that shares the same x-axis as ax.
+
+        consumption.plot(kind="bar",rot=0, ax = ax , position = 0)
+        emission.plot(kind="bar", rot=0, ax = ax2 , position = 1, linestyle="--")
+
         ax2.set_ylabel("Energy consumption in TWh")
         ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+
+        ax.set_ylabel('Consumption')
+        ax2.set_ylabel('Emission')
+  
+        plt.show()
 
     def gdp(self, *countries:str) -> None:
         """
@@ -309,7 +329,7 @@ class DataHandler:
             raise TypeError("Variable period is not an integer above zero.")
     
         if not self.is_country(country):
-            return ValueError("This country does not exist.")
+           raise ValueError("This country does not exist.")
         
         arima_df = self.data[['country','Consumption_Total','Emissions_Total']].copy()
         arima_df = arima_df.loc[arima_df["country"] ==country]
@@ -318,29 +338,36 @@ class DataHandler:
         df_emissions = arima_df.drop(["country", "Consumption_Total"], axis=1)
         df_emissions = df_emissions.rename(columns= {"Emissions_Total": "value"}) 
         df_emissions = df_emissions.reset_index()
-
+        
         df_consumption = arima_df.drop(["country", "Emissions_Total"], axis=1)
         df_consumption = df_consumption.rename(columns= {"Consumption_Total": "value"})
         df_consumption = df_consumption.reset_index()
-
+    
         legends = ["Predicted Consumption", "Predicted Emission"]
-        colors= ["red","blue"]
+        prediction_total = pd.DataFrame()
         ####### Prepare for arima #############
         _, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10))
         for df in [df_consumption, df_emissions]:
+            df.year = pd.to_datetime(df.year, format='%Y')
             time_series = df.set_index(df.columns[0])
             npts = 5
             train = time_series[:-npts]
 
-            model = ARIMA(train.values, order=(5, 1, 5), dates=train.index)
+            model = ARIMA(train.values, order=(4, 1, 5), dates=train.index)
             model_fit = model.fit()
 
             prediction = pd.DataFrame(model_fit.predict(start=48, end=48+period, dynamic=True))
             prediction['Time'] = pd.date_range(start='2020-01-01', periods= period+1, freq='YS')
             prediction.set_index('Time', inplace=True)
+            
+            prediction= prediction.rename({0: 'value'}, axis=1)
+            prediction_total = time_series.append(prediction)
+            prediction_total.iloc[40:50].plot(ax=axes[i],kind='line', c ='red')
+            prediction_total.iloc[49:].plot(ax=axes[i],kind='line', c ='blue')
+            
+            plt.legend(['Historical','Prediction'])
+    
 
-            prediction.plot(ax=axes[i],kind='line', c = colors[i])
             axes[i].set_title('Emission')
             axes[0].set_title('Consumption')
-            axes[i].legend(title=legends[i])
             i = i+1
