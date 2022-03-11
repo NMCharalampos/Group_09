@@ -93,7 +93,7 @@ class DataHandler:
 
 
     def enrich_data(self) -> None:
-        """enriches dataframe with emission column for each consumption column relevanz ,
+        """enriches dataframe with emission column for each consumption column relevant ,
         creates column with total emissions
         """
 
@@ -108,10 +108,10 @@ class DataHandler:
         self.data["wind_emission"] = self.data['wind_consumption'] * ((1e9 * 14)/1e6)
 
         self.data["Emissions_Total"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) + \
-            self.data['coal_consumption'] * ((1e9 * 1000)/1e6) + self.data['gas_consumption'] * ((1e9 * 455)/1e6) + \
-            self.data['hydro_consumption'] * ((1e9 * 90)/1e6) + self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) + \
-            self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
-            self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+        self.data['coal_consumption'] * ((1e9 * 1000)/1e6) + self.data['gas_consumption'] * ((1e9 * 455)/1e6) + \
+        self.data['hydro_consumption'] * ((1e9 * 90)/1e6) + self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) + \
+        self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
+        self.data['wind_consumption'] * ((1e9 * 14)/1e6)
 
 
     def list_countries(self) -> List[str]:
