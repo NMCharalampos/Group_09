@@ -1,3 +1,4 @@
+from ctypes import alignment
 import os
 import warnings
 from typing import List
@@ -115,7 +116,8 @@ class DataHandler:
         self.data.set_index('year', inplace=True)
 
         self.data = self.data.drop(["renewables_consumption", "fossil_fuel_consumption", "low_carbon_consumption", \
-                                    "primary_energy_consumption"], axis=1)
+                                    "primary_energy_consumption" ,"other_renewable_consumption"], axis=1)
+
         self.data["Consumption_Total"]=self.data.filter(regex='consumption').sum(axis = 1)
 
         self.data = self.data.fillna(0)
@@ -221,17 +223,21 @@ class DataHandler:
 
         fig = plt.figure() # Create matplotlib figure
 
-        ax = fig.add_subplot(111) # Create matplotlib axes
+        ax = fig.add_subplot() # Create matplotlib axes
         ax2 = ax.twinx() # Create another axes that shares the same x-axis as ax.
 
-        consumption.plot(kind="bar",rot=0, ax = ax , position = 0)
-        emission.plot(kind="bar", rot=0, ax = ax2 , position = 1, linestyle="--")
+        consumption.plot(kind="bar", ax = ax2 , position = 0, figsize=(10,7), width=0.3, align="center")
+        emission.plot(kind="bar", ax = ax , position = 1, figsize=(10,7), hatch="/", width=0.3)
+
+        ax.axes.set_xlim(-0.5, len(countries_list)-0.5)
+
 
         ax2.set_ylabel("Energy consumption in TWh")
-        ax2.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+        ax.legend(loc='center left', bbox_to_anchor=(1.2, 0.85))
+        ax2.legend(loc='center left', bbox_to_anchor=(1.2, 0.4))
 
-        ax.set_ylabel('Consumption')
-        ax2.set_ylabel('Emission')
+
+        ax.set_ylabel('Emission')
   
         plt.show()
 
@@ -323,8 +329,8 @@ class DataHandler:
         for country in self.list_countries():
             df1 = scatter_data.loc[scatter_data["country"] == country]
             plt.scatter(x = df1['Consumption_Total'], y = df1['Emissions_Total'], s = df1['population']/300000, alpha = 0.5)
-        plt.xlabel("Consumption_Total")
-        plt.ylabel("emissions")
+        plt.xlabel("Consumption Total in TWh")
+        plt.ylabel("Emissions in t ")
         plt.show()
 
     def arima_predict(self, country: str, period: int):
@@ -361,7 +367,7 @@ class DataHandler:
         legends = ["Predicted Consumption", "Predicted Emission"]
         prediction_total = pd.DataFrame()
 
-        _, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10))
+        fig , axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10))
         for df in [df_consumption, df_emissions]:
             df.year = pd.to_datetime(df.year, format='%Y')
             time_series = df.set_index(df.columns[0])
@@ -382,6 +388,10 @@ class DataHandler:
             
             plt.legend(['Historical','Prediction'])
     
-            axes[i].set_title('Emission')
-            axes[0].set_title('Consumption')
+            axes[i].set_title('Emission of ' + country)
+            axes[0].set_title('Consumption of ' + country)
+
+            axes[i].set_ylabel('Emissions in t')
+            axes[0].set_ylabel('Consumption in TWh')
+
             i = i+1
