@@ -100,15 +100,38 @@ class DataHandler:
 
     def clean_data(self) -> None:
         """filters to years before 2020 and after 1970,
+         drops continents and areas that are no specific country,
         converts year to datetime format and sets it as index,
         drops aggregated "_consumption" columns,
         drops "_consumption" columns irrelevant for energy mix analysis,
         creates column with total consumption,
         fills NaN values with 0
+       
         """
 
         self.data = self.data.loc[self.data['year'] >= 1970]
         self.data = self.data.loc[self.data['year']<2020]
+
+        self.data = self.data[~ self.data["country"].str.contains("Africa")]
+        self.data = self.data[~ self.data["country"].str.contains("Asia Pacific")]
+        self.data = self.data[~ self.data["country"].str.contains("Central America")]
+        self.data = self.data[~ self.data["country"].str.contains("Europe")]
+        self.data = self.data[~ self.data["country"].str.contains("Europe (other)")]
+        self.data = self.data[~ self.data["country"].str.contains("Middle East")]
+        self.data = self.data[~ self.data["country"].str.contains("OPEC")]
+        self.data = self.data[~ self.data["country"].str.contains("Other Asia & Pacific")]
+        self.data = self.data[~ self.data["country"].str.contains("North America")]
+        self.data = self.data[~ self.data["country"].str.contains("Other CIS")]
+        self.data = self.data[~ self.data["country"].str.contains("Other Caribbean")]
+        self.data = self.data[~ self.data["country"].str.contains("Other Middle East")]
+        self.data = self.data[~ self.data["country"].str.contains("CIS")]
+        self.data = self.data[~ self.data["country"].str.contains("Other South America")]
+        self.data = self.data[~ self.data["country"].str.contains("South & Central America")]
+        self.data = self.data[~ self.data["country"].str.contains("World")]
+        self.data = self.data[~ self.data["country"].str.contains("Other Southern Africa")]
+        self.data = self.data[~ self.data["country"].str.contains("Middle Africa")]
+        self.data = self.data[~ self.data["country"].str.contains("Other Northern Africa")]
+        self.data = self.data[~ self.data["country"].str.contains("Western Africa")]
 
         self.data["year"] = pd.to_datetime(self.data['year'], format='%Y').dt.strftime('%Y')
         # self.data = self.data.drop("year", axis=1)
