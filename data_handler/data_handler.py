@@ -253,6 +253,7 @@ class DataHandler:
         """
         gdp_data = self.data.copy()
         gdp_data.reset_index(inplace=True)
+        gdp_data = gdp_data[gdp_data["year"].astype("int") <=2016].copy()
 
         for country in countries:
             if not self.is_country(country):
@@ -260,7 +261,8 @@ class DataHandler:
             df_gdp = gdp_data.loc[gdp_data["country"] == country][['country','gdp','year']]
             plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
         plt.title('GDP Development')
-        plt.xlabel('Year')
+        plt.xlabel('Year 1970 - 2016')
+        plt.xticks(color='w')
         plt.ylabel('GDP (in billion USD)')
         plt.legend()
         plt.show()
