@@ -12,23 +12,59 @@ from statsmodels.tsa.arima.model import ARIMA
 
 warnings.filterwarnings("ignore")
 
-
-
 DIRECTORY = os.path.join('downloads', 'Consumption.csv')
 
 class DataHandler:
 
     """
-    ...TBD...
     Methods
     --------
+
+    download()
+        downloads the given web resource and saves it to a file,
+        the file and subfolder will be created if not already existent
+
+    load_data()
+        loads the contents of a file into the attribute of this object,
+        calls clean_data and enrich_date function
+
+    clean_data()
+        filters to years before 2020 and after 1970,
+        converts year to datetime format and sets it as index,
+        drops aggregated "_consumption" columns,
+        drops "_consumption" columns irrelevant for energy mix analysis,
+        creates column with total consumption,
+        fills NaN values with 0
+
+    enrich_data()
+        enriches cleaned dataframe with emission column for each consumption column,
+        creates column with total emissions
+
+    list_countries()
+        returns a list of all countries in the data set
+
+    is_country()
+        checks wether a country is contained in the data set
+
+    plot_consumption()
+        plots the energy consumption of the specified country
+
     compare_consumption()
-        Plots the total sum of each energy consumption column
-        for countries selected in '*countries' as a bar chart.
+        Plots the total sum of each energy consumption column for countries selected in '*countries' as a bar chart
 
     gdp()
         Plots the GDP column over the years for
-        countries selected in '*countries' as a line chart.
+        countries selected in '*countries' as a line chart
+
+    gap_minder()
+        Plots information about the relation of gdp (x-axis), total energy consumption (y-axis), and population (size)
+
+    scatter_plot()
+        Plots relation between energy consumption (x-axis), emission (y-axis) and population (size) in a scatter plot
+
+    arima_predict()
+        Plots the predicted emissions and consumption over a specified period of years of
+        a country selected in 'country' as two line charts
 
     """
 
@@ -38,9 +74,8 @@ class DataHandler:
         self.load_data()
 
     def download(self) -> None:
-        """downloads the given web resource and saves it to a file
+        """downloads the given web resource and saves it to a file,
             the file and subfolder will be created if not already existent
-
         """
         print("download data ... ")
 
@@ -52,8 +87,8 @@ class DataHandler:
             file.write(file_content)
 
     def load_data(self) -> None:
-        """loads the contents of a file into the attribute of this object
-            also filters data to the year after 1970
+        """loads the contents of a file into the attribute of this object,
+            calls clean_data and enrich_date function
         """
         if not os.path.isfile(DIRECTORY):
             self.download()
@@ -64,7 +99,9 @@ class DataHandler:
         self.enrich_data()
 
     def clean_data(self) -> None:
-        """drops aggregated "_consumption" columns,
+        """filters to years before 2020 and after 1970,
+        converts year to datetime format and sets it as index,
+        drops aggregated "_consumption" columns,
         drops "_consumption" columns irrelevant for energy mix analysis,
         creates column with total consumption,
         fills NaN values with 0
@@ -73,28 +110,19 @@ class DataHandler:
         self.data = self.data.loc[self.data['year'] >= 1970]
         self.data = self.data.loc[self.data['year']<2020]
 
-        # convert year to datetime and set as index
         self.data["year"] = pd.to_datetime(self.data['year'], format='%Y').dt.strftime('%Y')
         # self.data = self.data.drop("year", axis=1)
         self.data.set_index('year', inplace=True)
 
-        #drop aggregated and irrelevant consumption columns
         self.data = self.data.drop(["renewables_consumption", "fossil_fuel_consumption", "low_carbon_consumption", \
                                     "primary_energy_consumption"], axis=1)
-
-        #select consumption columns, create total column and fill NaN values with 0
-        # self.data = self.data[["country","gdp","biofuel_consumption","coal_consumption","gas_consumption",\
-        #                        "hydro_consumption","nuclear_consumption","oil_consumption","other_renewable_consumption",\
-        #                        "solar_consumption","wind_consumption", "population"]]
-
         self.data["Consumption_Total"]=self.data.filter(regex='consumption').sum(axis = 1)
 
         self.data = self.data.fillna(0)
 
-
     def enrich_data(self) -> None:
         """enriches dataframe with emission column for each consumption column relevant ,
-        creates column with total emissions
+            creates column with total emissions
         """
 
         #create emission columns
@@ -113,19 +141,40 @@ class DataHandler:
         self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
         self.data['wind_consumption'] * ((1e9 * 14)/1e6)
 
-
     def list_countries(self) -> List[str]:
         """returns a list of all countries in the data set
-        Returns:
-            List[str]: list of unique countries
+
+        Returns
+        ---------------
+        list[str]
+            List of unique countries
         """
         return [country for country in self.data.country.unique()]
 
+    def is_country(self, country: str) -> bool:
+        """checks wether a country is contained in the data set
+
+        Parameters
+        ---------------
+        country: string
+            Coutry which shall be checked
+
+        Returns
+        ---------------
+        bool
+            True if country is in the data set
+        """
+        return country in self.list_countries()
+
     def plot_consumption(self, country: str, normalize: bool=False) -> None:
         """plots the energy consumption of the specified country
-        Args:
-            country (str): country
-            normalize (bool, optional): values are normalized. Defaults to False.
+
+        Parameters
+        ---------------
+        country: string
+            Coutry whose consumption shall be plotted
+        normalize: bool (optional)
+            If True values are normalized. Defaults to False.
         """
         if not self.is_country(country):
             raise ValueError("This country does not exist.")
@@ -140,35 +189,19 @@ class DataHandler:
             title += " - normalized"
             ylabel = "Energy consumption - relative"
 
-
         plot = plot_data.plot.area(title= title )
 
         plot.set_ylabel(ylabel)
         plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
-    def is_country(self, country: str) -> bool:
-        """checks wether a country is contained in the data set
-
-        Returns:
-            bool: True if country is in the data set
-        """
-        return country in self.list_countries()
-
     def compare_consumption(self,*countries:str) -> None:
         """
-
-        Plots the total sum of each energy consumption column
-        for countries selected in '*countries' as a bar chart.
+        Plots the total sum of each energy consumption column for countries selected in '*countries' as a bar chart
 
         Parameters
         ---------------
         *countries: string
-            Countries that shall be plotted
-
-        Returns
-        ---------------
-        Nothing. Plots sum of different energy consumption per country in a bar chart.
-
+            Countries whose consumption shall be plotted
         """
         consumption = pd.DataFrame()
         emission = pd.DataFrame()
@@ -204,19 +237,13 @@ class DataHandler:
 
     def gdp(self, *countries:str) -> None:
         """
-
         Plots the GDP column over the years for
-        countries selected in '*countries' as a line chart.
+        countries selected in '*countries' as a line chart
 
         Parameters
         ---------------
         *countries: string
             Countries that shall be plotted
-
-        Returns
-        ---------------
-        Nothing. Plots GDP over the years per country in a line chart.
-
         """
         gdp_data = self.data.copy()
         gdp_data.reset_index(inplace=True)
@@ -234,16 +261,12 @@ class DataHandler:
 
     def gap_minder(self, year:int) -> None:
         """
-        Plots information about the relation of gdp, total energy consumption, and population
+        Plots information about the relation of gdp (x-axis), total energy consumption (y-axis), and population (size)
+
         Parameters
         --------------
-        self: class
-            The DataHandler Class itself
         year: integer
             The desired year for the the plot
-        Returns:
-        --------------
-        Nothing. Plots the output to the screen
         """
         if type(year) not in [int]:
             raise TypeError("Variable year is not an integer.")
@@ -288,9 +311,10 @@ class DataHandler:
         plt.title("Gapminder - " + str(year))
         plt.show()
 
-    def scatter_plot(self):
-
-
+    def scatter_plot(self) -> None:
+        """
+        Plots relation between energy consumption (x-axis), emission (y-axis) and population (size) in a scatter plot
+        """
         scatter_data = self.data.copy()
 
         scatter_data = scatter_data.groupby(["country"]).mean()
@@ -299,29 +323,21 @@ class DataHandler:
         for country in self.list_countries():
             df1 = scatter_data.loc[scatter_data["country"] == country]
             plt.scatter(x = df1['Consumption_Total'], y = df1['Emissions_Total'], s = df1['population']/300000, alpha = 0.5)
-        #mplcursors.cursor(hover=True)
         plt.xlabel("Consumption_Total")
         plt.ylabel("emissions")
         plt.show()
 
     def arima_predict(self, country: str, period: int):
         """
-    
         Plots the predicted emissions and consumption over a specified period of years of
-        a country selected in 'country' as two line charts.
+        a country selected in 'country' as two line charts
 
         Parameters
         ---------------
         country: string
-            Country that shall be plotted
-        
+            Country whose prediction shall be plotted
         period: int
             Number of predicted years
-
-        Returns
-        ---------------
-        Nothing. Plots emissions and consumption over a specified period of years.
-
         """
 
         i=0
@@ -334,7 +350,6 @@ class DataHandler:
         arima_df = self.data[['country','Consumption_Total','Emissions_Total']].copy()
         arima_df = arima_df.loc[arima_df["country"] ==country]
         
-        ####### Create two dataframes #######
         df_emissions = arima_df.drop(["country", "Consumption_Total"], axis=1)
         df_emissions = df_emissions.rename(columns= {"Emissions_Total": "value"}) 
         df_emissions = df_emissions.reset_index()
@@ -345,7 +360,7 @@ class DataHandler:
     
         legends = ["Predicted Consumption", "Predicted Emission"]
         prediction_total = pd.DataFrame()
-        ####### Prepare for arima #############
+
         _, axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10))
         for df in [df_consumption, df_emissions]:
             df.year = pd.to_datetime(df.year, format='%Y')
@@ -367,7 +382,6 @@ class DataHandler:
             
             plt.legend(['Historical','Prediction'])
     
-
             axes[i].set_title('Emission')
             axes[0].set_title('Consumption')
             i = i+1
