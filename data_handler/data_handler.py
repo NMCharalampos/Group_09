@@ -269,7 +269,7 @@ class DataHandler:
             plt.plot(df_gdp['year'],df_gdp['gdp'], label = country)
         plt.title('GDP Development')
         plt.xlabel('Year 1970 - 2016')
-        plt.xticks(color='w')
+        plt.xticks([], [])
         plt.ylabel('GDP (in billion USD)')
         plt.legend()
         plt.show()
