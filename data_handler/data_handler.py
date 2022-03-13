@@ -101,16 +101,24 @@ class DataHandler:
 
     def clean_data(self) -> None:
         """filters to years before 2020 and after 1970,
+         drops continents and areas that are no specific country,
         converts year to datetime format and sets it as index,
         drops aggregated "_consumption" columns,
         drops "_consumption" columns irrelevant for energy mix analysis,
         creates column with total consumption,
         fills NaN values with 0
+       
         """
 
         self.data = self.data.loc[self.data['year'] >= 1970]
         self.data = self.data.loc[self.data['year']<2020]
 
+
+        self.data = self.data[~ self.data["country"].str.contains("Europe|Africa|Central America|Asia Pacific|Middle East|OPEC|World|CIS"]
+        self.data = self.data[~ self.data["country"].str.contains("Other Asia & Pacific|North America|Other CIS|Other Caribbean|Western Africa")]
+        self.data = self.data[~ self.data["country"].str.contains("Other Middle East|Other Northern Africa|Middle Africa|")]
+        self.data = self.data[~ self.data["country"].str.contains("Other South America|South & Central America|Other Southern Africa")]
+    
         self.data["year"] = pd.to_datetime(self.data['year'], format='%Y').dt.strftime('%Y')
         # self.data = self.data.drop("year", axis=1)
         self.data.set_index('year', inplace=True)
