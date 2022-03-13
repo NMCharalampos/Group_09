@@ -121,8 +121,8 @@ class DataHandler:
         self.data = self.data.fillna(0)
 
     def enrich_data(self) -> None:
-        """enriches cleaned dataframe with emission column for each consumption column,
-        creates column with total emissions
+        """enriches dataframe with emission column for each consumption column relevant ,
+            creates column with total emissions
         """
 
         #create emission columns
