@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>data_handler module &mdash; Advanced Programming - Group 9 1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Advanced Programming - Group 9
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">data_handler module</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Advanced Programming - Group 9</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>data_handler module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/data_handler.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="module-data_handler">
+<span id="data-handler-module"></span><h1>data_handler module<a class="headerlink" href="#module-data_handler" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="data_handler.DataHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">data_handler.</span></span><span class="sig-name descname"><span class="pre">DataHandler</span></span><a class="headerlink" href="#data_handler.DataHandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.download">
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.download" title="Permalink to this definition"></a></dt>
+<dd><p>downloads the given web resource and saves it to a file,
+the file and subfolder will be created if not already existent</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.load_data" title="Permalink to this definition"></a></dt>
+<dd><p>loads the contents of a file into the attribute of this object,
+calls clean_data and enrich_date function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.clean_data">
+<span class="sig-name descname"><span class="pre">clean_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.clean_data" title="Permalink to this definition"></a></dt>
+<dd><p>filters to years before 2020 and after 1970,
+converts year to datetime format and sets it as index,
+drops aggregated “_consumption” columns,
+drops “_consumption” columns irrelevant for energy mix analysis,
+creates column with total consumption,
+fills NaN values with 0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.enrich_data">
+<span class="sig-name descname"><span class="pre">enrich_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.enrich_data" title="Permalink to this definition"></a></dt>
+<dd><p>enriches cleaned dataframe with emission column for each consumption column,
+creates column with total emissions</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.list_countries">
+<span class="sig-name descname"><span class="pre">list_countries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.list_countries" title="Permalink to this definition"></a></dt>
+<dd><p>returns a list of all countries in the data set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.is_country">
+<span class="sig-name descname"><span class="pre">is_country</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.is_country" title="Permalink to this definition"></a></dt>
+<dd><p>checks wether a country is contained in the data set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.plot_consumption">
+<span class="sig-name descname"><span class="pre">plot_consumption</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.plot_consumption" title="Permalink to this definition"></a></dt>
+<dd><p>plots the energy consumption of the specified country</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.compare_consumption">
+<span class="sig-name descname"><span class="pre">compare_consumption</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.compare_consumption" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the total sum of each energy consumption column for countries selected in ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>countries’ as a bar chart</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.gdp">
+<span class="sig-name descname"><span class="pre">gdp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.gdp" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the GDP column over the years for
+countries selected in ‘<a href="#id3"><span class="problematic" id="id4">*</span></a>countries’ as a line chart</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.gap_minder">
+<span class="sig-name descname"><span class="pre">gap_minder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.gap_minder" title="Permalink to this definition"></a></dt>
+<dd><p>Plots information about the relation of gdp (x-axis), total energy consumption (y-axis), and population (size)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.scatter_plot">
+<span class="sig-name descname"><span class="pre">scatter_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.scatter_plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plots relation between energy consumption (x-axis), emission (y-axis) and population (size) in a scatter plot</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_handler.DataHandler.arima_predict">
+<span class="sig-name descname"><span class="pre">arima_predict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#data_handler.DataHandler.arima_predict" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the predicted emissions and consumption over a specified period of years of
+a country selected in ‘country’ as two line charts</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">arima_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the predicted emissions and consumption over a specified period of years of
+a country selected in ‘country’ as two line charts</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>country</strong> (<em>string</em>) – Country whose prediction shall be plotted</p></li>
+<li><p><strong>period</strong> (<em>int</em>) – Number of predicted years</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">clean_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd><p>filters to years before 2020 and after 1970,
+converts year to datetime format and sets it as index,
+drops aggregated “_consumption” columns,
+drops “_consumption” columns irrelevant for energy mix analysis,
+creates column with total consumption,
+fills NaN values with 0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">compare_consumption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">countries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the total sum of each energy consumption column for countries selected in ‘<a href="#id7"><span class="problematic" id="id8">*</span></a>countries’ as a bar chart</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>*countries</strong> (<em>string</em>) – Countries whose consumption shall be plotted</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_handler.DataHandler.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#data_handler.DataHandler.data" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.frame.DataFrame</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id9" title="Permalink to this definition"></a></dt>
+<dd><p>downloads the given web resource and saves it to a file,
+the file and subfolder will be created if not already existent</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">enrich_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id10" title="Permalink to this definition"></a></dt>
+<dd><p>enriches dataframe with emission column for each consumption column relevant ,
+creates column with total emissions</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">gap_minder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id11" title="Permalink to this definition"></a></dt>
+<dd><p>Plots information about the relation of gdp (x-axis), total energy consumption (y-axis), and population (size)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>year</strong> (<em>integer</em>) – The desired year for the the plot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">gdp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">countries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id12" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the GDP column over the years for
+countries selected in ‘<a href="#id13"><span class="problematic" id="id14">*</span></a>countries’ as a line chart</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>*countries</strong> (<em>string</em>) – Countries that shall be plotted</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">is_country</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#id15" title="Permalink to this definition"></a></dt>
+<dd><p>checks wether a country is contained in the data set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>country</strong> (<em>string</em>) – Coutry which shall be checked</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if country is in the data set</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">list_countries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#id16" title="Permalink to this definition"></a></dt>
+<dd><p>returns a list of all countries in the data set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of unique countries</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id17" title="Permalink to this definition"></a></dt>
+<dd><p>loads the contents of a file into the attribute of this object,
+calls clean_data and enrich_date function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">plot_consumption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id18" title="Permalink to this definition"></a></dt>
+<dd><p>plots the energy consumption of the specified country</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>country</strong> (<em>string</em>) – Coutry whose consumption shall be plotted</p></li>
+<li><p><strong>normalize</strong> (<em>bool</em><em> (</em><em>optional</em><em>)</em>) – If True values are normalized. Defaults to False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">scatter_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#id19" title="Permalink to this definition"></a></dt>
+<dd><p>Plots relation between energy consumption (x-axis), emission (y-axis) and population (size) in a scatter plot</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, N. Charalampos, N. Kolloge, D. Rexer, L. Strasser.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
