@@ -2,7 +2,7 @@
 
 ### Project description:
 
-The following project illustrates the development of consumption and emissions per country over the last decades. On the basis of data from Our World in Data, the analysis allows the user a thorough analysis of developments and correlations of different aspects in the field of consumption and emissions.
+The following project illustrates the development of consumption and emissions per country over the last decades. On the basis of data from [Our World in Data](https://ourworldindata.org/), the analysis allows the user a thorough analysis of developments and correlations of different aspects in the field of consumption and emissions.
 
 
 ##### Contributors: 
