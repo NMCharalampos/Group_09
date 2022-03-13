@@ -1,9 +1,7 @@
-from ctypes import alignment
 import os
 import warnings
 from typing import List
 from matplotlib import pyplot as plt
-from mpl_toolkits.axes_grid1 import host_subplot
 import requests
 import pandas as pd
 import seaborn as sns
@@ -51,17 +49,20 @@ class DataHandler:
         plots the energy consumption of the specified country
 
     compare_consumption()
-        Plots the total sum of each energy consumption column for countries selected in '*countries' as a bar chart
+        Plots the total sum of each energy consumption column for countries selected in
+        '*countries' as a bar chart
 
     gdp()
         Plots the GDP column over the years for
         countries selected in '*countries' as a line chart
 
     gap_minder()
-        Plots information about the relation of gdp (x-axis), total energy consumption (y-axis), and population (size)
+        Plots information about the relation of gdp (x-axis), total energy consumption
+        (y-axis), and population (size)
 
     scatter_plot()
-        Plots relation between energy consumption (x-axis), emission (y-axis) and population (size) in a scatter plot
+        Plots relation between energy consumption (x-axis), emission (y-axis) and population
+        (size) in a scatter plot
 
     arima_predict()
         Plots the predicted emissions and consumption over a specified period of years of
@@ -107,24 +108,25 @@ class DataHandler:
         drops "_consumption" columns irrelevant for energy mix analysis,
         creates column with total consumption,
         fills NaN values with 0
-       
         """
 
         self.data = self.data.loc[self.data['year'] >= 1970]
         self.data = self.data.loc[self.data['year']<2020]
 
 
-        self.data = self.data[~ self.data["country"].str.contains("Europe|Africa|Central America|Asia Pacific|Middle East|OPEC|World|CIS"]
-        self.data = self.data[~ self.data["country"].str.contains("Other Asia & Pacific|North America|Other CIS|Other Caribbean|Western Africa")]
-        self.data = self.data[~ self.data["country"].str.contains("Other Middle East|Other Northern Africa|Middle Africa|")]
-        self.data = self.data[~ self.data["country"].str.contains("Other South America|South & Central America|Other Southern Africa")]
-    
+        self.data = self.data[~ self.data["country"].str.contains("""Europe|Africa|Central America
+            |Asia Pacific|Middle East|OPEC|World|CIS|Other Asia & Pacific|North America|Other CIS
+            |Other Caribbean|Western Africa|Other Middle East|Other Northern Africa|Middle Africa
+            |Other South America|South & Central America|Other Southern Africa""")]
+
         self.data["year"] = pd.to_datetime(self.data['year'], format='%Y').dt.strftime('%Y')
-        # self.data = self.data.drop("year", axis=1)
         self.data.set_index('year', inplace=True)
 
-        self.data = self.data.drop(["renewables_consumption", "fossil_fuel_consumption", "low_carbon_consumption", \
-                                    "primary_energy_consumption" ,"other_renewable_consumption"], axis=1)
+        self.data = self.data.drop(["renewables_consumption",
+                                    "fossil_fuel_consumption",
+                                    "low_carbon_consumption",
+                                    "primary_energy_consumption",
+                                    "other_renewable_consumption"], axis=1)
 
         self.data["Consumption_Total"]=self.data.filter(regex='consumption').sum(axis = 1)
 
@@ -136,20 +138,16 @@ class DataHandler:
         """
 
         #create emission columns
-        self.data["biofuel_emission"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) 
+        self.data["biofuel_emission"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6)
         self.data["coal_emission"] = self.data['coal_consumption'] * ((1e9 * 1000)/1e6)
-        self.data["gas_emission"] = self.data['gas_consumption'] * ((1e9 * 455)/1e6) 
+        self.data["gas_emission"] = self.data['gas_consumption'] * ((1e9 * 455)/1e6)
         self.data["hydro_emission"] = self.data['hydro_consumption'] * ((1e9 * 90)/1e6)
-        self.data["nuclear_emission"] = self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) 
+        self.data["nuclear_emission"] = self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6)
         self.data["oil_emission"] = self.data['oil_consumption'] * ((1e9 * 1200)/1e6)
         self.data["solar_emission"] = self.data['solar_consumption'] * ((1e9 * 53)/1e6)
         self.data["wind_emission"] = self.data['wind_consumption'] * ((1e9 * 14)/1e6)
 
-        self.data["Emissions_Total"] = self.data['biofuel_consumption'] * ((1e9 * 1450)/1e6) + \
-        self.data['coal_consumption'] * ((1e9 * 1000)/1e6) + self.data['gas_consumption'] * ((1e9 * 455)/1e6) + \
-        self.data['hydro_consumption'] * ((1e9 * 90)/1e6) + self.data['nuclear_consumption'] * ((1e9 * 5.5)/1e6) + \
-        self.data['oil_consumption'] * ((1e9 * 1200)/1e6) + self.data['solar_consumption'] * ((1e9 * 53)/1e6) + \
-        self.data['wind_consumption'] * ((1e9 * 14)/1e6)
+        self.data["Emissions_Total"] = self.data.filter(regex='emission').sum(axis = 1)
 
     def list_countries(self) -> List[str]:
         """returns a list of all countries in the data set
@@ -206,7 +204,8 @@ class DataHandler:
 
     def compare_consumption(self,*countries:str) -> None:
         """
-        Plots the total sum of each energy consumption column for countries selected in '*countries' as a bar chart
+        Plots the total sum of each energy consumption column for countries selected in
+        '*countries' as a bar chart
 
         Parameters
         ---------------
@@ -229,24 +228,24 @@ class DataHandler:
             consumption.index = countries_list
             emission.index = countries_list
 
-        fig = plt.figure() # Create matplotlib figure
+        fig = plt.figure()
 
-        ax = fig.add_subplot() # Create matplotlib axes
-        ax2 = ax.twinx() # Create another axes that shares the same x-axis as ax.
+        ax_emissions = fig.add_subplot()
+        ax_consumption = ax_emissions.twinx()
 
-        consumption.plot(kind="bar", ax = ax2 , position = 0, figsize=(10,7), width=0.3, align="center")
-        emission.plot(kind="bar", ax = ax , position = 1, figsize=(10,7), hatch="/", width=0.3)
+        consumption.plot(kind="bar", ax = ax_consumption , position = 0, figsize=(10,7), width=0.3, align="center")
+        emission.plot(kind="bar", ax = ax_emissions , position = 1, figsize=(10,7), hatch="/", width=0.3)
 
-        ax.axes.set_xlim(-0.5, len(countries_list)-0.5)
-
-
-        ax2.set_ylabel("Energy consumption in TWh")
-        ax.legend(loc='center left', bbox_to_anchor=(1.2, 0.85))
-        ax2.legend(loc='center left', bbox_to_anchor=(1.2, 0.4))
+        ax_emissions.axes.set_xlim(-0.5, len(countries_list)-0.5)
 
 
-        ax.set_ylabel('Emission')
-  
+        ax_consumption.set_ylabel("Energy consumption in TWh")
+        ax_emissions.legend(loc='center left', bbox_to_anchor=(1.2, 0.85))
+        ax_consumption.legend(loc='center left', bbox_to_anchor=(1.2, 0.4))
+
+
+        ax_emissions.set_ylabel('Emission')
+
         plt.show()
 
     def gdp(self, *countries:str) -> None:
@@ -277,7 +276,8 @@ class DataHandler:
 
     def gap_minder(self, year:int) -> None:
         """
-        Plots information about the relation of gdp (x-axis), total energy consumption (y-axis), and population (size)
+        Plots information about the relation of gdp (x-axis), total energy consumption (y-axis),
+        and population (size)
 
         Parameters
         --------------
@@ -292,19 +292,12 @@ class DataHandler:
         plot_data = plot_data.loc[plot_data.year == year]
         plot_data = plot_data.fillna(0)
 
-        plot_data["total_energy_consumption"] = plot_data.filter(regex='consumption').sum(axis=1)
-
-        plot_data = plot_data[~ plot_data["country"].str.contains("World")]
-        plot_data = plot_data[~ plot_data["country"].str.contains("Africa")]
-        plot_data = plot_data[~ plot_data["country"].str.contains("Europe")]
-        plot_data = plot_data[~ plot_data["country"].str.contains("North America")]
-
         plt.figure(dpi=120)
         np_pop = np.array(plot_data.population)
 
         sns.scatterplot(
             x=plot_data.gdp,
-            y=plot_data.total_energy_consumption,
+            y=plot_data.Consumption_Total,
             alpha=.5,
             palette="muted",
             size = np_pop,
@@ -329,12 +322,13 @@ class DataHandler:
 
     def scatter_plot(self) -> None:
         """
-        Plots relation between energy consumption (x-axis), emission (y-axis) and population (size) in a scatter plot
+        Plots relation between energy consumption (x-axis), emission (y-axis) and population
+        (size) in a scatter plot
         """
         scatter_data = self.data.copy()
 
-        scatter_data = scatter_data.groupby(["country"]).mean()
-        scatter_data = scatter_data.drop(index=["World", "Africa","Europe","North America"], axis=0).reset_index()
+        scatter_data = scatter_data.groupby(["country"]).mean().reset_index()
+
         plt.figure(figsize=(12, 6))
         for country in self.list_countries():
             df1 = scatter_data.loc[scatter_data["country"] == country]
@@ -343,7 +337,7 @@ class DataHandler:
         plt.ylabel("Emissions in t ")
         plt.show()
 
-    def arima_predict(self, country: str, period: int):
+    def arima_predict(self, country: str, period: int) -> None:
         """
         Plots the predicted emissions and consumption over a specified period of years of
         a country selected in 'country' as two line charts
@@ -359,28 +353,27 @@ class DataHandler:
         i=0
         if type(period) not in [int] or period <1:
             raise TypeError("Variable period is not an integer above zero.")
-    
+
         if not self.is_country(country):
-           raise ValueError("This country does not exist.")
-        
+            raise ValueError("This country does not exist.")
+
         arima_df = self.data[['country','Consumption_Total','Emissions_Total']].copy()
         arima_df = arima_df.loc[arima_df["country"] ==country]
-        
+
         df_emissions = arima_df.drop(["country", "Consumption_Total"], axis=1)
-        df_emissions = df_emissions.rename(columns= {"Emissions_Total": "value"}) 
+        df_emissions = df_emissions.rename(columns= {"Emissions_Total": "value"})
         df_emissions = df_emissions.reset_index()
-        
+
         df_consumption = arima_df.drop(["country", "Emissions_Total"], axis=1)
         df_consumption = df_consumption.rename(columns= {"Consumption_Total": "value"})
         df_consumption = df_consumption.reset_index()
-    
-        legends = ["Predicted Consumption", "Predicted Emission"]
+
         prediction_total = pd.DataFrame()
 
-        fig , axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10))
-        for df in [df_consumption, df_emissions]:
-            df.year = pd.to_datetime(df.year, format='%Y')
-            time_series = df.set_index(df.columns[0])
+        _ , axes = plt.subplots(nrows=1,ncols=2, figsize=(20, 10))
+        for dataframe in [df_consumption, df_emissions]:
+            dataframe.year = pd.to_datetime(dataframe.year, format='%Y')
+            time_series = dataframe.set_index(dataframe.columns[0])
             npts = 5
             train = time_series[:-npts]
 
@@ -390,14 +383,14 @@ class DataHandler:
             prediction = pd.DataFrame(model_fit.predict(start=48, end=48+period, dynamic=True))
             prediction['Time'] = pd.date_range(start='2020-01-01', periods= period+1, freq='YS')
             prediction.set_index('Time', inplace=True)
-            
+
             prediction= prediction.rename({0: 'value'}, axis=1)
             prediction_total = time_series.append(prediction)
             prediction_total.iloc[40:50].plot(ax=axes[i],kind='line', c ='red')
             prediction_total.iloc[49:].plot(ax=axes[i],kind='line', c ='blue')
-            
+
             plt.legend(['Historical','Prediction'])
-    
+
             axes[i].set_title('Emission of ' + country)
             axes[0].set_title('Consumption of ' + country)
 
@@ -405,3 +398,4 @@ class DataHandler:
             axes[0].set_ylabel('Consumption in TWh')
 
             i = i+1
+            
